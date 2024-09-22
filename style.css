@@ -1,0 +1,229 @@
+*{
+    user-select: none;
+}
+
+html, body{
+    margin: 0px;
+    padding: 0px;
+    min-height: 300%;
+    width: 100%;
+    background: url(src/bg2.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+p{
+    font-family: Inter;
+    font-weight: 1.2rem;
+    font-size: 1.2rem;
+    color: white;
+    text-align: center;
+}
+
+.main{
+    place-items: center;
+    align-self: center;
+    margin-top: 2%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 330px 330px 330px 330px 330px;
+    grid-template-rows: 430px 430px 430px 430px 430px 430px;
+}
+
+.topbar{
+    z-index: 99999999999999999999999999;
+    width: 100%;
+    background-color: rgb(0, 0, 0);
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 3px 2px rgb(0, 0, 0);
+}
+
+.card{
+    text-decoration: none;
+    width: 300px;
+    height: 400px;
+    box-shadow: 0 4px 16px 0 rgba(52, 52, 52, 0.4);
+    transition: all 0.25s;
+    
+    border-radius: 10px;
+
+    margin: 0px;
+}
+
+.card:hover{
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+
+::-webkit-scrollbar
+{
+    background-color: black;
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb
+{
+    background-color: #5e5e5e80;
+    border-radius: 10px;
+}
+
+.lit{
+    margin-top: -3%;
+    color: rgba( 255, 255, 255, 0.4 );
+    font-weight: 100;
+}
+
+.rating{
+    margin-top: 5%;
+    margin-bottom: 3%;
+    width: 60%;
+    height: 20px;
+    border: 1px solid rgba( 255, 255, 255, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+}
+
+.bar{
+    height: 20px;
+    background: linear-gradient(90deg, rgba(192,0,255,1) 0%, rgba(120,89,246,1) 64%);
+    border-radius: 15px;
+}
+
+.thumbnail{
+    border-radius: 7px;
+    border: 1px solid rgba( 255, 255, 255, 0.18 ); 
+    height: 150px; 
+    width: 220px; 
+    object-fit: cover; 
+    margin: 35px auto;
+}
+
+.player{
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: 1fr;
+
+    padding-bottom: 1%;
+
+    position: fixed;
+    top: 25%;
+    left: auto;
+    right: auto;
+    bottom: auto;
+
+    margin-top: -8%;
+
+    width: 80%;
+    height: 80%;
+
+    background: url(src/bg2.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+    border-radius: 5px;
+    border: 1px solid rgba( 255, 255, 255, 0.1);
+
+    animation: fadeIn 0.5s ease 0s 1 normal forwards;
+
+    z-index: 999;
+    overflow: hidden;
+}
+
+.playerhidden{
+    display: none;
+}
+
+@keyframes fadeIn {
+	0% {
+		opacity: 0;
+		transform: scale(0.6);
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+
+.SeasonCover{
+    width: 100%; 
+    height: auto;
+    background-repeat: no-repeat; 
+    background-size: contain;
+    border-radius: 5px;
+    transition: all 0.25s;
+}
+
+.SeasonCover:hover{
+    opacity: 0.6;   
+    border: 1px white solid;
+    transition: opacity 0.25s;
+}
+
+.EpisodesNumber{
+    opacity: 1;
+
+}
+
+
+.SeasonCover:hover .EpisodesNumber{
+    opacity: 1;
+}
+
+.Filter{
+    height: 100%; 
+    width: 100%;
+
+    background: rgba(14, 14, 14, 0.445);
+    backdrop-filter: blur( 20px );
+    -webkit-backdrop-filter: blur( 20px );
+
+    border-radius: 10px;
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+
+    display: grid;
+    grid-template-rows: 200px 80px 60px 60px;
+
+    transition: all 0.25s;
+}
+
+.Filter:hover{
+    background: rgba(52, 52, 52, 0.363);
+    backdrop-filter: blur( 10px );
+    -webkit-backdrop-filter: blur( 10px );
+}
+
+
+@media(max-width: 1800px){
+    .main{
+        grid-template-columns: 330px 330px 330px 330px;
+        grid-template-rows: 430px 430px 430px 430px 430px 430px;
+    }
+}
+
+@media(max-width: 1400px){
+    .main{
+        grid-template-columns: 330px 330px 330px;
+        grid-template-rows: 430px 430px 430px 430px 430px 430px;
+    }
+}
+
+@media(max-width: 1100px){
+    .main{
+        grid-template-columns: 330px 330px;
+        grid-template-rows: 430px 430px 430px 430px 430px 430px;
+    }
+}

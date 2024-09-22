@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>streamed</title>
+        
+        <meta charset="utf-8">
+        
+        <link rel="stylesheet" href="style.css">
+        <!--Font-->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+        <script src="data.js"></script>
+    </head>
+
+    <body>
+        <div class="topbar">
+            <a href="index.html" style="margin-left: 5%;">
+                <img src="src/icon.png" alt="icon" width="300px" style="display: inline-block;">
+            </a>
+        </div>
+
+        <!--Top pick-->
+        <div style="height: 800px; width: 90%; margin-top: 2%; border-radius: 15px; overflow: hidden; position: relative;" id="topPick">
+            
+        </div>
+
+
+        <!--Movie collection-->
+        <div id="rootContainer" class="main">
+            <!--Video Player-->
+            <div id="playerBg" class="playerhidden">
+                <div id="video" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <video width="90%" controls id="player" style="border-radius: 5px;"></video>
+                    <div id="SeasonBorder" style="margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;">
+                        <div id="SeasonContainer" style="height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"></div>
+                    </div>
+                    <p style="font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 2rem;" id="movieTitle"></p>
+                </div>
+                <div id="descriptionDiv" style="width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; overflow: auto; margin: auto;" >
+                    <p id="description" style="font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left; margin: 5%; height: 90%;"></p>
+                </div>
+                
+            </div>
+        </div>
+
+    </body>
+
+    <script>
+
+        let playerBg = document.getElementById('playerBg');
+        let player = document.getElementById('player');
+        let playerTitle = document.getElementById('movieTitle');
+        let playerDescription = document.getElementById('description');
+        let videoContainer = document.getElementById('video');
+        let SeasonContainer = document.getElementById('SeasonContainer');
+        let topPick = document.getElementById('topPick')
+        
+
+        let chooseTopPick = function(Movies) {
+            let VideoPick = document.createElement("video"); // Create a new video element
+
+            VideoPick.style.objectFit = "cover";
+            VideoPick.style.minWidth = "100%";
+            VideoPick.style.minHeight = "100%";
+
+            let path = Math.floor(Math.random() * Movies.length);
+            VideoPick.src = 'media/movies/' + Movies[path].path + '/main.mp4';
+
+            VideoPick.muted = true; // Mute the video
+
+
+            let topPick = document.getElementById("topPick");
+
+            topPick.innerHTML = ""; // Clear previous content if needed
+            topPick.appendChild(VideoPick);
+
+            // Function to pause the video when it's out of view
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        VideoPick.pause();
+                    } else {
+                        VideoPick.play(); // Resume playing if it re-enters view
+                    }
+                });
+            }, { threshold: 0.2 }); // Trigger when 80% of the video is out of view
+
+            observer.observe(VideoPick); // Start observing the video element
+
+            VideoPick.addEventListener('loadedmetadata', function() {
+                VideoPick.currentTime = Math.random() * VideoPick.duration; // Set random starting time
+                VideoPick.play(); // Start playing after setting the time
+            });
+
+            VideoPick.addEventListener('error', function() {
+                console.error('Error loading the video.');
+            });
+
+
+            //spawn giga overlay shit kinda stuff
+            let gigaOverlay = document.createElement("div");
+            gigaOverlay.style = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color:rgba(0, 0, 0, 0.2);"
+
+            //just the old stuff for making the movie title etc
+            //spawn parrent div
+            let summElem = document.createElement("div");
+            summElem.setAttribute('class', 'card');
+            summElem.style = "background: none; background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px ); margin: 15px; margin-top: 385px;"
+            
+            summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(Movies[path])})`);
+
+            //spawn the filter
+            let summFilterElem = document.createElement('div');
+            summFilterElem.setAttribute("class", "Filter")
+
+            //spawn the title
+            let summTitleElem = document.createElement('p');
+            summTitleElem.style = "font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 1.5rem;"
+            summTitleElem.innerText = Movies[path].title;
+
+            //spawn the image
+            let summImgElem = document.createElement('img');
+            summImgElem.src = 'media/' + Movies[path].type + '/' + Movies[path].path + '/meta/thumbnail.jpg'; //TODO: different file types
+            summImgElem.setAttribute('class', 'thumbnail')
+            
+            //append stuff
+            summElem.appendChild(summFilterElem);
+            summFilterElem.appendChild(summImgElem);
+            summFilterElem.appendChild(summTitleElem);
+
+            let summMetaElem = document.createElement('p');
+            summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
+            summMetaElem.innerText = 'Länge: ' + Movies[path].length;
+            summFilterElem.appendChild(summMetaElem);
+
+
+            topPick.appendChild(gigaOverlay);
+            gigaOverlay.appendChild(summElem);
+            
+        };
+
+
+
+
+
+        let spawnEpisodes = function(summary, Ep) {
+            let n = summary.seasonEp[Ep-1]
+            
+            SeasonContainer.innerHTML = ""
+            SeasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
+            document.getElementById('SeasonBorder').style = "margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
+
+            for(let i=0; i < n; i++){
+                
+                let EpPath = `media/${summary.type}/${summary.path}/${Ep}/${i+1}`;
+
+                let EpisodePlayer = document.createElement("video")
+                EpisodePlayer.setAttribute("controls", "");
+                
+                EpisodePlayer.src = EpPath + ".mp4";
+                EpisodePlayer.onerror = function() {
+                    EpisodePlayer.src = EpPath + ".mkv";
+                };
+                
+                EpisodePlayer.style = "width: 90%; height: 80%; margin-top: 5%; border-radius: 6;"
+
+                let EpPlayerContainer = document.createElement("div")
+                EpPlayerContainer.style = "width: 100%; height: 300px; border: 1px solid rgba( 255, 255, 255, 0.18 ); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(16px) saturate(180%); webkt-backdrop-filter: blur(16px) saturate(180%); background-color: rgba(17, 25, 40, 0.75); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.125)"
+
+                let EpInfo = document.createElement("p")
+                let EpisodeNumber = i +1 
+                EpInfo.innerHTML = "S " + Ep + " | Episode " + EpisodeNumber
+                EpInfo.style = "font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left;"
+
+                SeasonContainer.appendChild(EpPlayerContainer);
+                EpPlayerContainer.appendChild(EpisodePlayer);
+                EpPlayerContainer.appendChild(EpInfo);
+            }
+        }
+
+
+
+        let spawnPlayer = function(summary) {
+            playerBg.setAttribute('class', 'player');
+            console.log(summary.type)
+            if(summary.type == "movies"){
+                SeasonContainer.style.display = "none"
+                document.getElementById('SeasonBorder').style.display = "none"
+
+                player.src = 'media/' + summary.type + '/' + summary.path + '/main.mp4';
+                player.onerror = function() {
+                    player.src = 'media/' + summary.type + '/' + summary.path + '/main.mkv';
+                };
+                
+            }
+            else if (summary.type == "series"){
+                SeasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"
+                SeasonContainer.style.display = "block"
+                document.getElementById('SeasonBorder').style.display = "block"
+                player.style.display = "none"
+
+                for(let i=0; i < summary.seasons; i++){
+                    let cover = document.createElement("img")
+                    SeasonContainer.style.display = "grid"
+                    cover.src = `media/${summary.type}/${summary.path}/meta/${i+1}.jpg`
+                    cover.setAttribute("id", i+1)
+                    cover.setAttribute("class", "SeasonCover")
+                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${i+1})`)
+                    SeasonContainer.appendChild(cover);
+                }
+                
+            }
+
+            playerTitle.innerHTML = summary.title;
+            videoContainer.appendChild(playerTitle);
+            
+            playerDescription.innerHTML = summary.description;
+            document.getElementById("descriptionDiv").appendChild(playerDescription);
+        }
+
+
+
+        let createDiv = function(summary) {
+            //spawn parrent div
+            let summElem = document.createElement("div");
+            summElem.setAttribute('class', 'card');
+            summElem.style = "background: url(media/" + summary.type + "/" + summary.path + "/meta/thumbnail.jpg); background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px );"
+            
+            summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);
+
+            //spawn the filter
+            let summFilterElem = document.createElement('div');
+            summFilterElem.setAttribute("class", "Filter")
+
+            //spawn the title
+            let summTitleElem = document.createElement('p');
+            summTitleElem.style = "font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 1.5rem;"
+            summTitleElem.innerText = summary.title;
+
+            //spawn the image
+            let summImgElem = document.createElement('img');
+            summImgElem.src = 'media/' + summary.type + '/' + summary.path + '/meta/thumbnail.jpg'; //TODO: different file types
+            summImgElem.setAttribute('class', 'thumbnail')
+            
+            //append stuff
+            summElem.appendChild(summFilterElem);
+            summFilterElem.appendChild(summImgElem);
+            summFilterElem.appendChild(summTitleElem);
+
+            //spawn Episodes / Season info || Movie length
+            if(summary.type === 'series'){
+                let summMetaElem = document.createElement('p');
+                summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
+                summMetaElem.innerText = summary.seasons + ' Staffeln | ' + summary.episodes + ' Episoden';
+                summFilterElem.appendChild(summMetaElem);
+            }
+            else if(summary.type === 'movies'){
+                let summMetaElem = document.createElement('p');
+                summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
+                summMetaElem.innerText = 'Länge: ' + summary.length;
+                summFilterElem.appendChild(summMetaElem);
+            }
+
+
+            document.getElementById('rootContainer').appendChild(summElem);
+        }
+
+        let hide_player = function(){
+                console.log("ALAAAARRRM esc wurde gepresst");
+                player.pause()
+                playerBg.setAttribute('class', 'playerhidden');
+                player.style.display = "inline-block";
+                SeasonContainer.innerHTML = '';
+        }
+
+        let loaded = function() {
+            console.log('loaded');
+
+            for (let i = 0; i < Movies.length; i++) {
+                createDiv(Movies[i]);
+            }
+
+            for (let i = 0; i < Series.length; i++){
+                createDiv(Series[i]);
+            }
+
+            chooseTopPick(Movies)
+            
+            
+        }
+
+        //fancy for if(esc pressed){hide player}
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                hide_player()
+            }
+        });
+        
+        loaded();       
+    </script>
+
+
+</html>
