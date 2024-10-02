@@ -25,7 +25,7 @@ Streamed is designed to be straightforward to use, making it a perfect solution 
 To get started with Streamed, clone the repository, set up your media files, and run the necessary scripts to populate the server. The main interface is built using basic web technologies like HTML, CSS, and JavaScript.
 
 ```bash
-git clone [https://github.com/8nton/streamed.git](https://github.com/8nt0n/streamed.git)
+git clone https://github.com/8nt0n/streamed.git
 cd streamed
 ```
 
