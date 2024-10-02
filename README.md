@@ -74,11 +74,13 @@ This is a small, fun utility script that simply prints "no problem" after being 
 ## Usage:
 After resolving an issue or completing a debugging session, run:
 
-bash
-Code kopieren
+```bash
 python thanks.py
+```
 And you'll see the output:
-
+```bash
+No problem!
+```
 
 ## How It Works
 Streamed works by serving a simple webpage that lists your media collection. The backend logic (handled by main.py) scans your local media folder, extracts metadata, and creates a data.js file that contains the necessary details about your media. This data is then injected into index.html dynamically, creating a media catalog on-the-fly.
