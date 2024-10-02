@@ -10,6 +10,10 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+
+        <!--icon-->
+        <link rel="icon" type="image/png" href="src/logo.png">
         <script src="data.js"></script>
     </head>
 
@@ -182,6 +186,7 @@
 
 
         let spawnPlayer = function(summary) {
+            hide_player()
             playerBg.setAttribute('class', 'player');
             console.log(summary.type)
             if(summary.type == "movies"){
