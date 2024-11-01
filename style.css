@@ -159,8 +159,10 @@ p{
 
 
 .SeasonCover{
-    width: 100%; 
+    width: 23%;
+    margin: 5px;
     height: auto;
+    overflow: hidden;
     background-repeat: no-repeat; 
     background-size: contain;
     border-radius: 5px;
