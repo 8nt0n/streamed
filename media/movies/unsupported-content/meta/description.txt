@@ -1,0 +1,1 @@
+This one is just a test for correct handling of unsupported (video) files.

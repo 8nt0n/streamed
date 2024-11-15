@@ -1,17 +1,33 @@
+import glob
 import json
 import os
 import re
 import subprocess
 import time
+import uuid
 
-MEDIA_DIR_PATH = "../media"
-DATA_FILE_PATH = "../data.js"
-TEMP_FILE_PATH = "../data.tmp"
+MEDIA_TYPE_MOVIES = "movies"
+MEDIA_TYPE_SERIES = "series"
+MEDIA_DIR_PATH = os.path.join("..", "media")
+DATA_FILE_PATH = os.path.join("..", "data.js")
+TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
+VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
+
+
+def clearTempData():
+    for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
+        try:
+            if os.path.isfile(tmpFile):
+                os.unlink(tmpFile)
+                log(f"[INFO] temporary file {tmpFile} deleted")
+        except Exception as ex:
+            log(f"[WARN] failed to delete temporary file {tmpFile}: {ex}")
+            
 
 # TODO: generally buffer output
 def writeData(content, mediatype):
 
-    print(f'processing {mediatype} {content["name"]} under  {content["path"]}...')
+    log(f"[INFO] processing {content['name']} of type {mediatype} under {content['path']}...")
 
     with open(TEMP_FILE_PATH, 'a') as file:
         file.write("        {\n")
@@ -31,8 +47,7 @@ def writeData(content, mediatype):
 
             file.write("            description: '")
             file.write(content["description"] + "',\n\n")
-
-        if mediatype == "series":
+        elif mediatype == "series":
             file.write("            seasons: '")
             file.write(content["Seasons"] + "',\n")
 
@@ -60,7 +75,7 @@ def writeHeader(name, type):
     with open(TEMP_FILE_PATH, 'a') as file:
         if type == "start":
             file.write("{\n")
-        file.write("    var "+ name +" = [\n")
+        file.write("    var " + name + " = [\n")
 
 def writeFooter(type):
     with open(TEMP_FILE_PATH, 'a') as file:
@@ -81,41 +96,63 @@ def collectInfoMap(mediaFilePath, infoType):
 #    print(f'found {len(infoSections)} info sections') 
     for infos in infoSections:
         if infos['@type'] == infoType:
-            print(f'found "{infoType}" section')
+            print(f" [DBG] found '{infoType}' section")
             return infos
 
-    log(f'[ ERR] couldn\'t find "{infoType}" section')
+    log(f" [ERR] couldn\'t find '{infoType}' section")
     return []
 
 
 
-def get_metainfo(mediapath):
+def findVideoFile(videoDirPath):
+    for file in os.listdir(videoDirPath):
+        videoFilePath = os.path.join(videoDirPath, file)
+        log(f" [DBG] checking {videoFilePath} for being a video file...")
+        if not os.path.isfile(videoFilePath):
+            log(f" [DBG] >>> ignoring {videoFilePath} (not a file)")
+        elif re.search(VIDEO_FILE_PATTERN, videoFilePath) == None:
+            log(f" [DBG] >>> ignoring {videoFilePath} (not a video file)")
+        else:
+            log(f" [DBG] >>> found {file}")
+            return file
+        
+    log(f" [ERR] no supported movie file found in {videoDirPath}")
+    return None
 
-    #get foldername of each movie
-    Subfolder = os.listdir(mediapath)
-    for i in range(len(Subfolder)):
+
+def asMovieName(folderName):
+    movieName = ""
+    for substr in folderName.split("-"):
+        s = substr.strip()
+        length = len(s)
+        if length == 0:
+            continue
+        
+        movieName += substr[0].upper()
+        if length > 1:
+            movieName += substr[1:]
+            
+        movieName += " "
+    
+    return movieName.strip()
+
+
+def get_metainfo(mediatype):
+    mediapath = os.path.join(MEDIA_DIR_PATH, mediatype)
+    count = 1
+    for subfolder in os.listdir(mediapath):
         DATA = {}
 
-        #check for type
-        mediatype = mediapath.replace(MEDIA_DIR_PATH + "/", '').lower()
+        videoDirPath = os.path.join(mediapath, subfolder)
 
-        #do the name and path
-        path = Subfolder[i]
-        name = path.replace('-', ' ')
-        DATA["name"] = name
-        DATA["path"] = path
-
-        #also get length
-        if mediatype == "movies":
-#            my_movie = Movie(0, 0, 0) #pass in random values this language so stupid
-#            my_movie.get_length(mediapath, path)
-#            DATA["length"] = my_movie.length
-
+        if mediatype == MEDIA_TYPE_MOVIES:
             # utilize mediainfo:
-            videoDirPath = mediapath + '/' + path
-            videoFilePath = videoDirPath + '/main.mp4'
-            if  not os.path.isfile(videoFilePath):
-                videoFilePath = videoDirPath + '/main.mkv' # ahem...
+            videoFile = findVideoFile(videoDirPath)
+            if videoFile == None:
+                log(f" [ERR] aborting processing of folder {videoDirPath}")
+                continue
+                
+            videoFilePath = os.path.join(videoDirPath, videoFile)
 
             mediaInfo = collectInfoMap(videoFilePath, 'Video')
             if len(mediaInfo) > 0:
@@ -137,45 +174,52 @@ def get_metainfo(mediapath):
                 # store the detected values in the model:
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
+                DATA["path"] = subfolder + "/" + videoFile
+
+        #get Seasons i necessary
+        if mediatype == MEDIA_TYPE_SERIES:           
+            #get Episodes
+            Seasons = 0
+            SeasonsEp = []
+            Episodes = 0
+            for i in os.listdir(videoDirPath):
+                if i != "meta":
+#                    Episodes += int(len(os.listdir(mediapath + "/" +  path + "/" + i)))
+#                    SeasonsEp.append(int(len(os.listdir(mediapath + "/" +  path + "/" + i))))
+                    Seasons += 1
+                    count = len(os.listdir(os.path.join(videoDirPath, i)))
+                    Episodes += count
+                    SeasonsEp.append(count) # TODO: check order of 'listDir' result
+            
+            DATA["path"] = subfolder
+            DATA["Seasons"] = str(Seasons)
+            DATA["Episodes"] = str(Episodes)
+            DATA["SeasonEp"] = str(SeasonsEp)
+            
+            
+        DATA["name"] = asMovieName(subfolder)
+        DATA["mediatype"] = mediatype        
+        DATA["id"] = str(count)
 
         # looks if description exists  (obviously written by the one and only gpt as if i would write exceptions)
         try:
-            descrPath = mediapath + '/' + path + "/meta/description.txt"
+            descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt")
             with open(descrPath, "r") as meta:
                 # Check if the first line is empty
                 line = meta.readline()
                 if line == "":
-                    print('no description')
+                    print(f"[WARN] no description text found in {descrPath}")
+                    DATA["description"] = ""
                 else:
                     DATA["description"] = line
         except FileNotFoundError:
             log(f'[WARN] {descrPath} not found')
-
-        DATA["mediatype"] = mediatype
-        
-        #get id
-        id =  mediatype[0].upper() + str(i+1)
-        DATA["id"] = id
-
-        
-        #get Seasons i necessary
-        if mediatype == "series":
-            Seasons = str(len(os.listdir(mediapath + "/" +  path)) -1) #-1 bc of the meta folder
-            DATA["Seasons"] = Seasons
-
-            #get Episodes
-            SeasonsEp = []
-            Episodes = 0
-            for i in os.listdir(mediapath + "/" +  path):
-                if i != "meta":
-                    Episodes += int(len(os.listdir(mediapath + "/" +  path + "/" + i)))
-                    SeasonsEp.append(int(len(os.listdir(mediapath + "/" +  path + "/" + i))))
-            DATA["Episodes"] = str(Episodes)
-            DATA["SeasonEp"] = str(SeasonsEp)
+            
         #write the gathered data to the actual data.js file
-        print(DATA)
-        print("\n\n\n")
+#        print(DATA)
+#        print("\n\n\n")
         writeData(DATA, mediatype)
+        count += 1
 
 
 def log(msg):
@@ -185,13 +229,14 @@ def log(msg):
 
 # TODO: provide base directory per script argument (sys.argv[])
 def main():
+    clearTempData()
 
-    writeHeader('Movies', type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(MEDIA_DIR_PATH + '/movies') #call all the metainfos 2.and
+    writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
+    get_metainfo(MEDIA_TYPE_MOVIES) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
-    writeHeader('Series', type="anythingBesidesStart")
-    get_metainfo(MEDIA_DIR_PATH + '/series') #call all the metainfos 2.and
+    writeHeader("Series", type="anythingBesidesStart")
+    get_metainfo(MEDIA_TYPE_SERIES) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
