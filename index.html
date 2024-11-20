@@ -29,11 +29,18 @@
             
         </div>
 
+        <!-- filter -->
+        <div id="filterDiv" style="margin-top: 20px;">
+            <input id="filterInput" type="text" onkeyup="filter(this.value);">
+        </div>
 
         <!--Movie collection-->
         <div id="rootContainer" class="main">
             <!--Video Player-->
             <div id="playerBg" class="playerhidden">
+                <div style="position: absolute; top: 20px; left: 20px;">
+                    <button onclick="hide_player();">X</button>
+                </div>
                 <div id="video" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
                     <video width="90%" controls id="player" style="border-radius: 5px;"></video>
                     <div id="SeasonBorder" style="margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;">
@@ -68,8 +75,9 @@
             VideoPick.style.minWidth = "100%";
             VideoPick.style.minHeight = "100%";
 
-            let path = Math.floor(Math.random() * Movies.length);
-            VideoPick.src = 'media/movies/' + Movies[path].path; // + '/main.mp4';
+            const movieIdx = Math.floor(Math.random() * Movies.length);
+            const randomMovie = Movies[movieIdx];
+            VideoPick.src = 'media/movies/' + randomMovie.path + '/' + randomMovie.file;
 
             VideoPick.muted = true; // Mute the video
 
@@ -112,7 +120,7 @@
             summElem.setAttribute('class', 'card');
             summElem.style = "background: none; background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px ); margin: 15px; margin-top: 385px;"
             
-            summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(Movies[path])})`);
+            summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(randomMovie)})`);
 
             //spawn the filter
             let summFilterElem = document.createElement('div');
@@ -121,11 +129,11 @@
             //spawn the title
             let summTitleElem = document.createElement('p');
             summTitleElem.style = "font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 1.5rem;"
-            summTitleElem.innerText = Movies[path].title;
+            summTitleElem.innerText = randomMovie.title;
 
             //spawn the image
             let summImgElem = document.createElement('img');
-            summImgElem.src = 'media/' + Movies[path].type + '/' + Movies[path].path + '/meta/thumbnail.jpg'; //TODO: different file types
+            summImgElem.src = 'media/' + randomMovie.type + '/' + randomMovie.path + '/meta/thumbnail.jpg'; //TODO: different file types
             summImgElem.setAttribute('class', 'thumbnail')
             
             //append stuff
@@ -135,7 +143,7 @@
 
             let summMetaElem = document.createElement('p');
             summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
-            summMetaElem.innerText = 'Länge: ' + Movies[path].length;
+            summMetaElem.innerHTML = 'Länge: ' + randomMovie.length + "<br>Format: " + randomMovie.resolution;
             summFilterElem.appendChild(summMetaElem);
 
 
@@ -143,9 +151,6 @@
             gigaOverlay.appendChild(summElem);
             
         };
-
-
-
 
 
         let spawnEpisodes = function(summary, Ep) {
@@ -189,17 +194,12 @@
             hide_player()
             playerBg.setAttribute('class', 'player');
             console.log(summary.type)
-            if(summary.type == "movies"){
+            if (summary.type == "movies"){
                 SeasonContainer.style.display = "none"
                 document.getElementById('SeasonBorder').style.display = "none"
 
-                player.src = 'media/' + summary.type + '/' + summary.path + '/main.mp4';
-                player.onerror = function() {
-                    player.src = 'media/' + summary.type + '/' + summary.path + '/main.mkv';
-                };
-                
-            }
-            else if (summary.type == "series"){
+                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;                
+            } else if (summary.type == "series") {
                 SeasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"
                 SeasonContainer.style.display = "block"
                 document.getElementById('SeasonBorder').style.display = "block"
@@ -223,13 +223,14 @@
             document.getElementById("descriptionDiv").appendChild(playerDescription);
         }
 
-
+        
 
         let createDiv = function(summary) {
-            //spawn parrent div
+            //spawn parent div            
             let summElem = document.createElement("div");
-            summElem.setAttribute('class', 'card');
-            summElem.style = "background: url(media/" + summary.type + "/" + summary.path + "/meta/thumbnail.jpg); background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px );"
+            summElem.setAttribute('class', 'card media-item ' + summary.path);
+            const thumbnailPath = "media/" + summary.type + "/" + summary.path + "/meta/thumbnail.jpg"; // TODO: different file types
+            summElem.style = "background: url(" + thumbnailPath + "); background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px );"
             
             summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);
 
@@ -244,7 +245,7 @@
 
             //spawn the image
             let summImgElem = document.createElement('img');
-            summImgElem.src = 'media/' + summary.type + '/' + summary.path + '/meta/thumbnail.jpg'; //TODO: different file types
+            summImgElem.src = thumbnailPath;
             summImgElem.setAttribute('class', 'thumbnail')
             
             //append stuff
@@ -253,16 +254,16 @@
             summFilterElem.appendChild(summTitleElem);
 
             //spawn Episodes / Season info || Movie length
-            if(summary.type === 'series'){
+            if (summary.type === 'series'){
                 let summMetaElem = document.createElement('p');
                 summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
-                summMetaElem.innerText = summary.seasons + ' Staffeln | ' + summary.episodes + ' Episoden';
+                summMetaElem.innerHTML = summary.seasons + ' Staffeln <br> ' + summary.episodes + ' Episoden';
                 summFilterElem.appendChild(summMetaElem);
             }
             else if(summary.type === 'movies'){
                 let summMetaElem = document.createElement('p');
                 summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
-                summMetaElem.innerText = 'Länge: ' + summary.length;
+                summMetaElem.innerHTML = 'Länge: ' + summary.length + '<br> Format: ' + summary.resolution;
                 summFilterElem.appendChild(summMetaElem);
             }
 
@@ -301,7 +302,38 @@
             }
         });
         
-        loaded();       
+        loaded();
+        
+        
+        
+        let filter = function(value) {
+            console.log('filtering by ' + value);
+            
+            if (value.length === 0) {
+                resetFilter();
+                return;
+            }
+            
+            const lowValue = value.toLowerCase();
+            
+            for (let movie of Movies) {
+                if (movie.title.toLowerCase().indexOf(lowValue) === -1) {
+                    document.querySelector("." + movie.path).style.visibility = "hidden";
+                }
+            }
+
+            for (let serie of Series){
+                if (serie.title.toLowerCase().indexOf(lowValue) === -1) {
+                    document.querySelector("." + serie.path).style.visibility = "hidden";
+                }
+            }
+        }
+        
+        let resetFilter = function() {
+            for (let mediaItem of document.querySelectorAll(".media-item")) {
+                mediaItem.style.visibility = "visible";
+            }
+        }
     </script>
 
 

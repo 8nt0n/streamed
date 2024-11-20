@@ -2,8 +2,9 @@
     var Movies = [
         {
             title: 'The Gun Fighter',
-            path: 'the-gun-fighter/main.mp4',
+            path: 'the-gun-fighter',
 
+            file: 'main.mp4',
             length: '8 min',
             resolution: '256x144 px',
             description: 'This is a description of the movie',

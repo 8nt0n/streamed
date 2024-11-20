@@ -36,9 +36,12 @@ def writeData(content, mediatype):
         file.write(content["name"] + "',\n")
             
         file.write("            path: '")
-        file.write(content["path"] + "',\n\n")
+        file.write(content["path"] + "',\n")
         
         if mediatype == "movies":
+            file.write("            file: '")
+            file.write(content["file"] + "',\n")        
+        
             file.write("            length: '")
             file.write(content["length"] + "',\n")
 
@@ -96,10 +99,10 @@ def collectInfoMap(mediaFilePath, infoType):
 #    print(f'found {len(infoSections)} info sections') 
     for infos in infoSections:
         if infos['@type'] == infoType:
-            print(f" [DBG] found '{infoType}' section")
+            log(f" [DBG] ::collectInfoMap: found '{infoType}' section in media info for {mediaFilePath}")
             return infos
 
-    log(f" [ERR] couldn\'t find '{infoType}' section")
+    log(f" [ERR] ::collectInfoMap: couldn\'t find '{infoType}' section in media info for {mediaFilePath}")
     return []
 
 
@@ -107,13 +110,13 @@ def collectInfoMap(mediaFilePath, infoType):
 def findVideoFile(videoDirPath):
     for file in os.listdir(videoDirPath):
         videoFilePath = os.path.join(videoDirPath, file)
-        log(f" [DBG] checking {videoFilePath} for being a video file...")
+        log(f" [DBG] checking {videoFilePath}...")
         if not os.path.isfile(videoFilePath):
             log(f" [DBG] >>> ignoring {videoFilePath} (not a file)")
         elif re.search(VIDEO_FILE_PATTERN, videoFilePath) == None:
             log(f" [DBG] >>> ignoring {videoFilePath} (not a video file)")
         else:
-            log(f" [DBG] >>> found {file}")
+            log(f" [DBG] >>> found video file {file}")
             return file
         
     log(f" [ERR] no supported movie file found in {videoDirPath}")
@@ -152,6 +155,7 @@ def get_metainfo(mediatype):
                 log(f" [ERR] aborting processing of folder {videoDirPath}")
                 continue
                 
+            
             videoFilePath = os.path.join(videoDirPath, videoFile)
 
             mediaInfo = collectInfoMap(videoFilePath, 'Video')
@@ -174,7 +178,8 @@ def get_metainfo(mediatype):
                 # store the detected values in the model:
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
-                DATA["path"] = subfolder + "/" + videoFile
+                DATA['path'] = subfolder
+                DATA['file'] = videoFile
 
         #get Seasons i necessary
         if mediatype == MEDIA_TYPE_SERIES:           
