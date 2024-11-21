@@ -30,8 +30,8 @@
         </div>
 
         <!-- filter -->
-        <div id="filterDiv" style="margin-top: 20px;">
-            <input id="filterInput" type="text" onkeyup="filter(this.value);">
+        <div id="filterDiv" style="margin-top: 20px; width: 33%;">
+            <input id="filterInput" placeholder="Suchen nach Titel" type="text" style="width: 100%;" onkeyup="filter(this.value);">
         </div>
 
         <!--Movie collection-->
@@ -318,20 +318,20 @@
             
             for (let movie of Movies) {
                 if (movie.title.toLowerCase().indexOf(lowValue) === -1) {
-                    document.querySelector("." + movie.path).style.visibility = "hidden";
+                    document.querySelector("." + movie.path).style.display = "none";
                 }
             }
 
             for (let serie of Series){
                 if (serie.title.toLowerCase().indexOf(lowValue) === -1) {
-                    document.querySelector("." + serie.path).style.visibility = "hidden";
+                    document.querySelector("." + serie.path).style.display = "none";
                 }
             }
         }
         
         let resetFilter = function() {
             for (let mediaItem of document.querySelectorAll(".media-item")) {
-                mediaItem.style.visibility = "visible";
+                mediaItem.style.display = "block";
             }
         }
     </script>

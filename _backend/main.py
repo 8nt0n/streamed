@@ -213,7 +213,7 @@ def get_metainfo(mediatype):
                 # Check if the first line is empty
                 line = meta.readline()
                 if line == "":
-                    print(f"[WARN] no description text found in {descrPath}")
+                    log(f"[WARN] no description text found in {descrPath}")
                     DATA["description"] = ""
                 else:
                     DATA["description"] = line
