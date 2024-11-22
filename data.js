@@ -3,7 +3,6 @@
         {
             title: 'The Gun Fighter',
             path: 'the-gun-fighter',
-
             file: 'main.mp4',
             length: '8 min',
             resolution: '256x144 px',
@@ -18,7 +17,6 @@
         {
             title: 'Pencilmation',
             path: 'pencilmation',
-
             seasons: '2',
             episodes: '5',
             seasonEp: [3, 2],

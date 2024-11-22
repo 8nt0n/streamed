@@ -1,10 +1,13 @@
 import glob
+import importlib.util
 import json
 import os
 import re
 import subprocess
+import sys
 import time
 import uuid
+
 
 MEDIA_TYPE_MOVIES = "movies"
 MEDIA_TYPE_SERIES = "series"
@@ -12,7 +15,6 @@ MEDIA_DIR_PATH = os.path.join("..", "media")
 DATA_FILE_PATH = os.path.join("..", "data.js")
 TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
-
 
 def clearTempData():
     for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
@@ -88,9 +90,33 @@ def writeFooter(type):
 
 
 
-def collectInfoMap(mediaFilePath, infoType):
-#  print(f'::collectInfoMap(\'{mediaFilePath}\', \'{infoType}\')')
+def collectInfoMap(mediaFilePath, infoType, moviepyModule):
+    if moviepyModule is not None:
+        log(f' [DBG] trying to extract movie meta data using moviepy...')
+        return infoMapFromMoviepy(mediaFilePath, moviepyModule)
+    else:
+        log(f' [DBG] trying to extract movie meta data using mediainfo command...')
+        return infoMapFromMediainfo(mediaFilePath, infoType)
+    
 
+def infoMapFromMoviepy(mediaFilePath, moviepyModule):
+    infoMap = {}
+    try:
+        with moviepyModule.VideoFileClip(mediaFilePath) as video:
+            infoMap['Duration'] = int(video.duration) #returns a value in seconds
+            log(f' [DBG] video.size={video.size}')
+            infoMap['Width'] = video.size[0]
+            infoMap['Height'] = video.size[1]
+    except Exception as ex:
+        log(f' [ERR] failed to examine {mediaFilePath}: {ex}')
+        
+    log(f' [DBG] video infos for {mediaFilePath}: {infoMap}')
+        
+    return infoMap
+    
+    
+    
+def infoMapFromMediainfo(mediaFilePath, infoType):
     complProc = subprocess.run(['mediainfo', '--Output=JSON', mediaFilePath, '/dev/null'], capture_output = True)
     jsonMediaObj = json.loads(complProc.stdout) 
 #    print(jsonMediaObj)
@@ -99,18 +125,19 @@ def collectInfoMap(mediaFilePath, infoType):
 #    print(f'found {len(infoSections)} info sections') 
     for infos in infoSections:
         if infos['@type'] == infoType:
-            log(f" [DBG] ::collectInfoMap: found '{infoType}' section in media info for {mediaFilePath}")
+            log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+#            log(f' [DBG] video infos for {mediaFilePath}: {infos}')
             return infos
 
-    log(f" [ERR] ::collectInfoMap: couldn\'t find '{infoType}' section in media info for {mediaFilePath}")
-    return []
+    log(f' [ERR] failed to examine {mediaFilePath}, couldn\'t find \'{infoType}\' section in media info')
+    return {}
 
 
 
 def findVideoFile(videoDirPath):
     for file in os.listdir(videoDirPath):
         videoFilePath = os.path.join(videoDirPath, file)
-        log(f" [DBG] checking {videoFilePath}...")
+#        log(f" [DBG] checking {videoFilePath}...")
         if not os.path.isfile(videoFilePath):
             log(f" [DBG] >>> ignoring {videoFilePath} (not a file)")
         elif re.search(VIDEO_FILE_PATTERN, videoFilePath) == None:
@@ -140,9 +167,9 @@ def asMovieName(folderName):
     return movieName.strip()
 
 
-def get_metainfo(mediatype):
+def get_metainfo(mediatype, moviepyModule):
     mediapath = os.path.join(MEDIA_DIR_PATH, mediatype)
-    count = 1
+    count = 1    
     for subfolder in os.listdir(mediapath):
         DATA = {}
 
@@ -157,8 +184,8 @@ def get_metainfo(mediatype):
                 
             
             videoFilePath = os.path.join(videoDirPath, videoFile)
-
-            mediaInfo = collectInfoMap(videoFilePath, 'Video')
+            
+            mediaInfo = collectInfoMap(videoFilePath, 'Video', moviepyModule)
             if len(mediaInfo) > 0:
                 placeHolder = '[unknown]'
                 lengthInfo = placeHolder
@@ -230,18 +257,37 @@ def get_metainfo(mediatype):
 def log(msg):
     # TODO: write to log file
     print(msg)
+    
+
+# imports moviepy if it's available, see https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported    
+# install with:
+# pip install --force-reinstall -v "moviepy==1.0.3"
+def loadMoviepyModule():
+    name = 'moviepy.editor'
+    if (spec := importlib.util.find_spec(name)) is not None:
+        # If you chose to perform the actual import ...
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        log(f"[INFO] {name!r} has been imported")
+        return module
+    else:
+        print(f"[WARN] can't find {name!r} module")
+        return None
 
 
 # TODO: provide base directory per script argument (sys.argv[])
 def main():
     clearTempData()
-
+    
+    moviepyModule = loadMoviepyModule()
+    
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(MEDIA_TYPE_MOVIES) #call all the metainfos 2.and
+    get_metainfo(MEDIA_TYPE_MOVIES, moviepyModule) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(MEDIA_TYPE_SERIES) #call all the metainfos 2.and
+    get_metainfo(MEDIA_TYPE_SERIES, moviepyModule) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
