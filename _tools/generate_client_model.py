@@ -8,6 +8,8 @@ import sys
 import time
 import uuid
 
+import streamed_tools_common as cmn
+
 
 MEDIA_TYPE_MOVIES = "movies"
 MEDIA_TYPE_SERIES = "series"
@@ -21,15 +23,15 @@ def clearTempData():
         try:
             if os.path.isfile(tmpFile):
                 os.unlink(tmpFile)
-                log(f"[INFO] temporary file {tmpFile} deleted")
+                cmn.log(f"[INFO] temporary file {tmpFile} deleted")
         except Exception as ex:
-            log(f"[WARN] failed to delete temporary file {tmpFile}: {ex}")
+            cmn.log(f"[WARN] failed to delete temporary file {tmpFile}: {ex}")
             
 
 # TODO: generally buffer output
 def writeData(content, mediatype):
 
-    log(f"[INFO] processing {content['name']} of type {mediatype} under {content['path']}...")
+    cmn.log(f"[INFO] processing {content['name']} of type {mediatype} under {content['path']}...")
 
     with open(TEMP_FILE_PATH, 'a') as file:
         file.write("        {\n")
@@ -92,10 +94,10 @@ def writeFooter(type):
 
 def collectInfoMap(mediaFilePath, infoType, moviepyModule):
     if moviepyModule is not None:
-        log(f' [DBG] trying to extract movie meta data using moviepy...')
+        cmn.log(f' [DBG] trying to extract movie meta data using moviepy...')
         return infoMapFromMoviepy(mediaFilePath, moviepyModule)
     else:
-        log(f' [DBG] trying to extract movie meta data using mediainfo command...')
+        cmn.log(f' [DBG] trying to extract movie meta data using mediainfo command...')
         return infoMapFromMediainfo(mediaFilePath, infoType)
     
 
@@ -104,13 +106,13 @@ def infoMapFromMoviepy(mediaFilePath, moviepyModule):
     try:
         with moviepyModule.VideoFileClip(mediaFilePath) as video:
             infoMap['Duration'] = int(video.duration) #returns a value in seconds
-            log(f' [DBG] video.size={video.size}')
+            cmn.log(f' [DBG] video.size={video.size}')
             infoMap['Width'] = video.size[0]
             infoMap['Height'] = video.size[1]
     except Exception as ex:
-        log(f' [ERR] failed to examine {mediaFilePath}: {ex}')
+        cmn.log(f' [ERR] failed to examine {mediaFilePath}: {ex}')
         
-    log(f' [DBG] video infos for {mediaFilePath}: {infoMap}')
+    cmn.log(f' [DBG] video infos for {mediaFilePath}: {infoMap}')
         
     return infoMap
     
@@ -125,11 +127,11 @@ def infoMapFromMediainfo(mediaFilePath, infoType):
 #    print(f'found {len(infoSections)} info sections') 
     for infos in infoSections:
         if infos['@type'] == infoType:
-            log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
-#            log(f' [DBG] video infos for {mediaFilePath}: {infos}')
+            cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+#            cmn.log(f' [DBG] video infos for {mediaFilePath}: {infos}')
             return infos
 
-    log(f' [ERR] failed to examine {mediaFilePath}, couldn\'t find \'{infoType}\' section in media info')
+    cmn.log(f' [ERR] failed to examine {mediaFilePath}, couldn\'t find \'{infoType}\' section in media info')
     return {}
 
 
@@ -137,16 +139,16 @@ def infoMapFromMediainfo(mediaFilePath, infoType):
 def findVideoFile(videoDirPath):
     for file in os.listdir(videoDirPath):
         videoFilePath = os.path.join(videoDirPath, file)
-#        log(f" [DBG] checking {videoFilePath}...")
+#        cmn.log(f" [DBG] checking {videoFilePath}...")
         if not os.path.isfile(videoFilePath):
-            log(f" [DBG] >>> ignoring {videoFilePath} (not a file)")
+            cmn.log(f" [DBG] >>> ignoring {videoFilePath} (not a file)")
         elif re.search(VIDEO_FILE_PATTERN, videoFilePath) == None:
-            log(f" [DBG] >>> ignoring {videoFilePath} (not a video file)")
+            cmn.log(f" [DBG] >>> ignoring {videoFilePath} (not a video file)")
         else:
-            log(f" [DBG] >>> found video file {file}")
+            cmn.log(f" [DBG] >>> found video file {file}")
             return file
         
-    log(f" [ERR] no supported movie file found in {videoDirPath}")
+    cmn.log(f" [ERR] no supported movie file found in {videoDirPath}")
     return None
 
 
@@ -179,7 +181,7 @@ def get_metainfo(mediatype, moviepyModule):
             # utilize mediainfo:
             videoFile = findVideoFile(videoDirPath)
             if videoFile == None:
-                log(f" [ERR] aborting processing of folder {videoDirPath}")
+                cmn.log(f" [ERR] aborting processing of folder {videoDirPath}")
                 continue
                 
             
@@ -240,12 +242,12 @@ def get_metainfo(mediatype, moviepyModule):
                 # Check if the first line is empty
                 line = meta.readline()
                 if line == "":
-                    log(f"[WARN] no description text found in {descrPath}")
+                    cmn.log(f"[WARN] no description text found in {descrPath}")
                     DATA["description"] = ""
                 else:
                     DATA["description"] = line
         except FileNotFoundError:
-            log(f'[WARN] {descrPath} not found')
+            cmn.log(f'[WARN] {descrPath} not found')
             
         #write the gathered data to the actual data.js file
 #        print(DATA)
@@ -253,10 +255,6 @@ def get_metainfo(mediatype, moviepyModule):
         writeData(DATA, mediatype)
         count += 1
 
-
-def log(msg):
-    # TODO: write to log file
-    print(msg)
     
 
 # imports moviepy if it's available, see https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported    
@@ -269,7 +267,7 @@ def loadMoviepyModule():
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
         spec.loader.exec_module(module)
-        log(f"[INFO] {name!r} has been imported")
+        cmn.log(f"[INFO] {name!r} has been imported")
         return module
     else:
         print(f"[WARN] can't find {name!r} module")
@@ -291,6 +289,6 @@ def main():
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
-    log("[INFO] " + DATA_FILE_PATH + " successfully generated")
+    cmn.log("[INFO] " + DATA_FILE_PATH + " successfully generated")
 
 main()
