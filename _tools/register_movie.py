@@ -30,7 +30,7 @@ def printHelp():
         + f"{ARG_MEDIA_DIR}           path to the target media repository containing your streamable movies, defaults to {cmn.MEDIA_DIR_PATH}\n"
         + f"{ARG_MOVIE_TITLE}           the movie's title (will be extracted from the source video file's name if not present)\n"
         + f"{ARG_MOVIE_DESCR}           the movie's description (defaults to the movie's title)\n"
-        + f"{ARG_CREATE_SYMLINK}           create a symlink to the source video file instead of copying it to the media repository - use with caution!\n"
+        + f"{ARG_CREATE_SYMLINK}           create a symlink to the source video file instead of copying it to the media repository (must be supported by the operating system) - use with caution!\n"
         + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit"
     )
 
@@ -65,11 +65,15 @@ def register():
     
     metaFolder = os.path.join(movieFolder, "meta") # TODO: use constant
     os.makedirs(metaFolder)
-    cmn.log(f" [DBG] directories created: {metaFolder}")
+    if os.path.isdir(metaFolder):
+        cmn.log(f" [DBG] directories created: {metaFolder}")
+    else:
+        cmn.log(f" [ERR] failed to create directory '{metaFolder}'")
+        sys.exit(-1)
     
     # copy (or link) video file
-    if createSymlink: # Unix/Linux only!
-        symlinkPath = os.path.join(movieFolder, srcFile)
+    if createSymlink: # TODO: test!!!
+        symlinkPath = os.path.join(movieFolder, os.path.basename(srcFile))
         os.symlink(srcFile, symlinkPath)
         cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
     else:
