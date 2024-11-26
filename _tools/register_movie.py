@@ -50,32 +50,33 @@ def register():
     cmn.log(f'[INFO] symlink movie: {createSymlink}')
     
     if srcFile == None:
-        cmn.log(" [ERR] no valid video file provided")
-        sys.exit(-1)
+        raise RuntimeError("no valid video file provided")
+
 
     if targetDir == None or not os.path.isdir(targetDir):
-        cmn.log(" [ERR] no valid media repository provided")
-        sys.exit(-1)
+        raise RuntimeError("no valid media repository provided")
 
     # create the movie dir and the 'meta' subfolder
     movieFolder = os.path.join(targetDir, cmn.MEDIA_TYPE_MOVIES, cmn.titleToFileName(movieTitle))
     if os.path.isdir(movieFolder):
-        cmn.log(f" [ERR] movie directory '{movieFolder}' already exists")
-        sys.exit(-1)
+        raise RuntimeError(f"movie directory '{movieFolder}' already exists")
     
     metaFolder = os.path.join(movieFolder, "meta") # TODO: use constant
     os.makedirs(metaFolder)
     if os.path.isdir(metaFolder):
         cmn.log(f" [DBG] directories created: {metaFolder}")
     else:
-        cmn.log(f" [ERR] failed to create directory '{metaFolder}'")
-        sys.exit(-1)
+        raise RuntimeError(f"failed to create directory '{metaFolder}'")
     
     # copy (or link) video file
     if createSymlink: # TODO: test!!!
         symlinkPath = os.path.join(movieFolder, os.path.basename(srcFile))
-        os.symlink(srcFile, symlinkPath)
-        cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
+        try:
+            os.symlink(srcFile, symlinkPath)
+            cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
+        except Exception as ex:
+            cmn.log(f" [ERR] failed to symlink {srcFile} to {symlinkPath}: {ex}")
+            raise ex
     else:
         shutil.copy2(srcFile, movieFolder)  # use shutil.copy2() to preserve timestamp
         cmn.log(f" [DBG] {srcFile} copied to {movieFolder}")
@@ -88,8 +89,9 @@ def register():
         
         cmn.log(f" [DBG] description written to {descrFilePath}")
     except Exception as ex:
-        cmn.log(f"[WARN] failed to write the description text file {descrFilePath}: {ex}")        
-    
+        cmn.log(f"[WARN] failed to write the description text file {descrFilePath}: {ex}")     
+        raise ex
+        
     # if possible create thumbnail in the 'meta' subfolder
     
     
@@ -103,8 +105,11 @@ def main():
     if cmn.hasSysArg(ARG_HELP) or cmn.hasSysArg(ARG_HELP_LONG):
         printHelp()
         sys.exit(0)
-
-    register()
     
+    try:
+        register()
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to register movie: {ex}")
+        sys.exit(-1)
     
 main()
