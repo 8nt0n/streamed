@@ -13,6 +13,7 @@ import lib_streamed_tools_common as cmn
 
 DATA_FILE_PATH = os.path.join("..", "data.js")
 TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
+UNKNOWN_VALUE = "[n/a]"
 
 def clearTempData():
     for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
@@ -115,17 +116,20 @@ def infoMapFromMoviepy(mediaFilePath, moviepyModule):
     
     
 def infoMapFromMediainfo(mediaFilePath, infoType):
-    complProc = subprocess.run(['mediainfo', '--Output=JSON', mediaFilePath, '/dev/null'], capture_output = True)
-    jsonMediaObj = json.loads(complProc.stdout) 
-#    print(jsonMediaObj)
+    try:
+        complProc = subprocess.run(['mediainfo', '--Output=JSON', mediaFilePath, '/dev/null'], capture_output = True)
+        jsonMediaObj = json.loads(complProc.stdout) 
+#        print(jsonMediaObj)
 
-    infoSections = jsonMediaObj[0]['media']['track']
-#    print(f'found {len(infoSections)} info sections') 
-    for infos in infoSections:
-        if infos['@type'] == infoType:
-            cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
-#            cmn.log(f' [DBG] video infos for {mediaFilePath}: {infos}')
-            return infos
+        infoSections = jsonMediaObj[0]['media']['track']
+#        print(f'found {len(infoSections)} info sections') 
+        for infos in infoSections:
+            if infos['@type'] == infoType:
+                cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+#                cmn.log(f' [DBG] video infos for {mediaFilePath}: {infos}')
+                return infos
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to run 'mediainfo' (not installed or not in PATH): {ex}")
 
     cmn.log(f' [ERR] failed to examine {mediaFilePath}, couldn\'t find \'{infoType}\' section in media info')
     return {}
@@ -160,16 +164,18 @@ def get_metainfo(mediatype, moviepyModule):
             if videoFile == None:
                 cmn.log(f" [ERR] aborting processing of folder {videoDirPath}")
                 continue
+            
+            DATA['path'] = subfolder
+            DATA['file'] = videoFile   
+            DATA['length'] = UNKNOWN_VALUE
+            DATA['resolution'] = UNKNOWN_VALUE
                 
-            
             videoFilePath = os.path.join(videoDirPath, videoFile)
-            
             mediaInfo = collectInfoMap(videoFilePath, 'Video', moviepyModule)
             if len(mediaInfo) > 0:
-                placeHolder = '[unknown]'
-                lengthInfo = placeHolder
-                widthInfo = placeHolder
-                heightInfo = placeHolder
+                lengthInfo = UNKNOWN_VALUE
+                widthInfo = UNKNOWN_VALUE
+                heightInfo = UNKNOWN_VALUE
                 for name in mediaInfo:
                     if name == 'Duration':
                         seconds = float(mediaInfo[name])
@@ -184,9 +190,7 @@ def get_metainfo(mediatype, moviepyModule):
                 # store the detected values in the model:
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
-                DATA['path'] = subfolder
-                DATA['file'] = videoFile
-
+                
         #get Seasons i necessary
         if mediatype == cmn.MEDIA_TYPE_SERIES:           
             #get Episodes
@@ -238,16 +242,33 @@ def get_metainfo(mediatype, moviepyModule):
 # install with:
 # pip install --force-reinstall -v "moviepy==1.0.3"
 def loadMoviepyModule():
+#    if True:
+#        return None
+        
     name = 'moviepy.editor'
-    if (spec := importlib.util.find_spec(name)) is not None:
-        # If you chose to perform the actual import ...
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        spec.loader.exec_module(module)
-        cmn.log(f"[INFO] {name!r} has been imported")
-        return module
-    else:
-        print(f"[WARN] can't find {name!r} module")
+    try:
+        if (spec := importlib.util.find_spec(name)) is not None:
+            # If you chose to perform the actual import ...
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            cmn.log(f"[INFO] {name!r} has been imported")
+            return module
+    except Exception as ex:
+        print(f" [ERR] couldn't import {name!r} module: {ex}")
+
+    print(f"[WARN] {name!r} module not available")
+    return None
+
+
+def detectMediainfoVersion():
+    try:
+        complProc = subprocess.run(['mediainfo', '--Version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").replace("\r", "").replace("\n", "")
+        cmn.log(f"[INFO] found 'mediainfo' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to detect 'mediainfo' version (not installed or not in PATH): {ex}")
         return None
 
 
@@ -256,6 +277,12 @@ def refresh():
     clearTempData()
     
     moviepyModule = loadMoviepyModule()
+    if moviepyModule != None:
+        cmn.log(f"[INFO] using 'moviepy' module to extract media information")
+    elif detectMediainfoVersion() != None:
+        cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
+    else:
+        cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' found, extracting media information will not be supported")
     
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
     get_metainfo(cmn.MEDIA_TYPE_MOVIES, moviepyModule) #call all the metainfos 2.and
