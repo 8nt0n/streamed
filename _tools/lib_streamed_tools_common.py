@@ -8,7 +8,7 @@ MEDIA_TYPE_SERIES = "series"
 MEDIA_DIR_PATH = os.path.join("..", "media")
 
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
-FILENAME_SPLIT_PATTERN = re.compile("\s|-|_")
+FILENAME_SPLIT_PATTERN = re.compile("[\W_]")
 
 def log(msg):
     print(msg)
