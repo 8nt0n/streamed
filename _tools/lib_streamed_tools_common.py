@@ -2,6 +2,9 @@ import os
 import re
 import sys
 
+ARG_VERBOSE = "-v"
+LOG_DBG = ARG_VERBOSE in sys.argv
+DBG_MSG_PATTERN = re.compile("^\s*\[DBG\]\s")
 
 MEDIA_TYPE_MOVIES = "movies"
 MEDIA_TYPE_SERIES = "series"
@@ -11,6 +14,9 @@ VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
 FILENAME_SPLIT_PATTERN = re.compile("[\W_]")
 
 def log(msg):
+    if not LOG_DBG and DBG_MSG_PATTERN.search(msg) != None:
+        return
+
     print(msg)
 
 

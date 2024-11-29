@@ -157,6 +157,8 @@ def get_metainfo(mediatype, moviepyModule):
         DATA = {}
 
         videoDirPath = os.path.join(mediapath, subfolder)
+        if not os.path.isdir(videoDirPath):
+            continue
 
         if mediatype == cmn.MEDIA_TYPE_MOVIES:
             # utilize mediainfo:
@@ -275,13 +277,14 @@ def detectMediainfoVersion():
 # main entry point:
 def refresh():
     clearTempData()
-    
+        
     moviepyModule = loadMoviepyModule()
     if moviepyModule != None:
         cmn.log(f"[INFO] using 'moviepy' module to extract media information")
     elif detectMediainfoVersion() != None:
         cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
     else:
+        # TODO: also try ffmpeg
         cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' found, extracting media information will not be supported")
     
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
