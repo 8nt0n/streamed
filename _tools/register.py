@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import sys
@@ -15,26 +16,39 @@ ARG_MOVIE_DESCR = "-d"
 ARG_RECURSIVE = "-r"
 ARG_MEDIA_DIR = "-m"
 ARG_SYMLINK = "-l"
+ARG_INCL_GLOB = "-i"
+ARG_EXCL_GLOB = "-e"
 
 NOOP_VALIDATOR = lambda argValue: True
 
 
 def printHelp():
     print(
-        f"Usage: python {sys.argv[0]}"
-        + f" {ARG_SRC_FILE} <source video file> | {ARG_SRC_FOLDER} <source video folder>"
+        "Usage:\n"
+        + f"python {sys.argv[0]}"
+        + f" {ARG_SRC_FILE} <source video file>"
         + f" [{ARG_MOVIE_TITLE} <movie title>]"
         + f" [{ARG_MOVIE_DESCR} <movie description>]"
         + f" [{ARG_MEDIA_DIR} <media repository>]"
+        + f" [{ARG_SYMLINK}]\n"
+        + f"python {sys.argv[0]}"
+        + f" {ARG_SRC_FOLDER} <source video folder>"
+        + f" [{ARG_MEDIA_DIR} <media repository>]"
+        + f" [{ARG_RECURSIVE}]"
+        + f" [{ARG_INCL_GLOB} <include files glob>]"
+        + f" [{ARG_EXCL_GLOB} <exclude files glob>]"
         + f" [{ARG_RECURSIVE}]"
         + f" [{ARG_SYMLINK}]\n"
-        + "This script adds a new video file to the media repository.\n\n"
+
+        + "This script adds new video files to the media repository.\n\n"
         + f"Arguments:\n"
         + f"{ARG_SRC_FILE}           path to the source video (mandatory when adding a single movie file to the media repository)\n"
         + f"{ARG_SRC_FOLDER}           path to the folder containing the video files (mandatory when adding multiple movie files to the media repository)\n"
         + f"{ARG_MEDIA_DIR}           path to the target media repository containing your streamable movies, defaults to {cmn.MEDIA_DIR_PATH}\n"
-        + f"{ARG_MOVIE_TITLE}           the movie's title adding a single movie file to the media repository (will be extracted from the source video file's name if not present)\n"
+        + f"{ARG_MOVIE_TITLE}           the movie's title when adding a single movie file to the media repository (will be extracted from the source video file's name if not present)\n"
         + f"{ARG_MOVIE_DESCR}           the movie's description when adding a single movie file to the media repository (defaults to the movie's title)\n"
+        + f"{ARG_INCL_GLOB}           include only video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
+        + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
         + f"{ARG_SYMLINK}           create symlink(s) to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
         + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit\n"
@@ -42,7 +56,7 @@ def printHelp():
     
     print(
         "Usage examples:\n"
-        + "# register a single movie file:\n"
+        + "# register (copy) a single movie file:\n"
         + f"python {sys.argv[0]} \\ \n"
         + f" {ARG_SRC_FILE} /home/me/videos/blues_brothers.mp4 \\ \n"
         + f" {ARG_MOVIE_TITLE} \"The Blues Brothers\" \\ \n"
@@ -51,14 +65,20 @@ def printHelp():
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FOLDER} /home/me/videos/"
         + f" {ARG_RECURSIVE}"
+        + f" {ARG_SYMLINK}\n"
+        + "# register (symlink) all MP4 movie files located in the provided folder without 'blue' in their file name:\n"
+        + f"python {sys.argv[0]}"
+        + f" {ARG_SRC_FOLDER} /home/me/videos/"
+        + f" {ARG_INCL_GLOB} *.mp4"
+        + f" {ARG_INCL_GLOB} *blue*"
         + f" {ARG_SYMLINK}"
     )
     
 
-def registerFolder(dir, recursive, targetDir, createSymlink):
+def registerFolder(dir, inclPattern, exclPattern, recursive, targetDir, createSymlink):
     for fsElem in os.listdir(dir):
         path = os.path.join(dir, fsElem)
-        if cmn.isVideoFile(path):
+        if cmn.isVideoFile(path) and inclPattern.fullmatch(fsElem) != None and exclPattern.fullmatch(fsElem) == None:
             try:
                 movieTitle = cmn.fileNameToTitle(fsElem)
                 movieDescr = movieTitle
@@ -66,9 +86,9 @@ def registerFolder(dir, recursive, targetDir, createSymlink):
             except Exception as ex:
                 cmn.log(f" [ERR] failed to register movie '{fsElem}': {ex}")
         elif os.path.isdir(path) and recursive:
-            registerFolder(path, recursive, targetDir, createSymlink)
+            registerFolder(path, inclPattern, exclPattern, recursive, targetDir, createSymlink)
         else:
-            cmn.log(f" [DBG] ignoring '{fsElem}' - neither dir nor video file")
+            cmn.log(f" [DBG] ignoring '{fsElem}' - neither dir nor (accapted) video file")
 
 
 def main():
@@ -95,9 +115,12 @@ def main():
         elif srcDir != None:
             singleMovieMode = False
             
+            inclGlob = cmn.findSysArgValue(ARG_INCL_GLOB, NOOP_VALIDATOR) or "*"
+            exclGlob = cmn.findSysArgValue(ARG_EXCL_GLOB, NOOP_VALIDATOR) or "." # default: a never matching pattern
             recursive = cmn.hasSysArg(ARG_RECURSIVE)
             
             cmn.log(f"[INFO] source root folder: {srcDir}")
+            cmn.log(f"[INFO] include GLOB: {inclGlob}")
             cmn.log(f"[INFO] include subfolders: {recursive}")
         else:
             raise RuntimeError("no valid source video file or folder provided")
@@ -114,7 +137,7 @@ def main():
         if singleMovieMode:
             reg.register(srcFile, movieTitle, movieDescr, targetDir, createSymlink)
         else:
-            registerFolder(srcDir, recursive, targetDir, createSymlink)
+            registerFolder(srcDir, cmn.patternFromGlob(inclGlob), cmn.patternFromGlob(exclGlob), recursive, targetDir, createSymlink)
             
         # at last trigger client model refresh
         cmn.log("[INFO] starting client model refresh")

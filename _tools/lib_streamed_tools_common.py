@@ -13,6 +13,8 @@ MEDIA_DIR_PATH = os.path.join("..", "media")
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
 FILENAME_SPLIT_PATTERN = re.compile("[\W_]")
 
+GLOB_SPLI_PATTERN = re.compile("([*?])")
+
 def log(msg):
     if not LOG_DBG and DBG_MSG_PATTERN.search(msg) != None:
         return
@@ -33,6 +35,7 @@ def findSysArgValue(argName, validator):
             return value if validator(value) else None
             
     log(f' [DBG] sys arg {argName} not found')
+    return None
         
     
 def isVideoFile(path):
@@ -66,3 +69,23 @@ def fileNameToTitle(path):
 
 def titleToFileName(title, ext = ""):
     return None if title == None else title.lower().replace(" ", "-")
+    
+    
+def patternFromGlob(glob):
+    regex = "(?i)"
+    for substr in GLOB_SPLI_PATTERN.split(glob):
+        if len(substr) == 0:
+            continue
+        elif substr == "*":
+            regex +=".*"
+        elif substr == "?":
+            regex += "."
+        else:
+            regex += re.escape(substr)
+            
+    try:
+        log(f" [DBG] GLOB '{glob}' -> regex '{regex}'")
+        return re.compile(regex)
+    except Exception as ex:
+        log(f" [ERR] failed to compile GLOB '{glob}': {ex}")
+        raise ex
