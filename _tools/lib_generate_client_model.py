@@ -152,6 +152,7 @@ def findVideoFile(videoDirPath):
 
 def get_metainfo(mediatype, moviepyModule):
     mediapath = os.path.join(cmn.MEDIA_DIR_PATH, mediatype)
+    os.makedirs(mediapath, exist_ok=True) # make sure path exists
     count = 1    
     for subfolder in os.listdir(mediapath):
         DATA = {}

@@ -70,7 +70,7 @@ def printHelp():
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FOLDER} /home/me/videos/"
         + f" {ARG_INCL_GLOB} *.mp4"
-        + f" {ARG_INCL_GLOB} *blue*"
+        + f" {ARG_EXCL_GLOB} *blue*"
         + f" {ARG_SYMLINK}"
     )
     
@@ -121,6 +121,7 @@ def main():
             
             cmn.log(f"[INFO] source root folder: {srcDir}")
             cmn.log(f"[INFO] include GLOB: {inclGlob}")
+            cmn.log(f"[INFO] exclude GLOB: {exclGlob}")
             cmn.log(f"[INFO] include subfolders: {recursive}")
         else:
             raise RuntimeError("no valid source video file or folder provided")
