@@ -11,6 +11,7 @@ MEDIA_TYPE_SERIES = "series"
 MEDIA_DIR_PATH = os.path.join("..", "media")
 
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
+FILENAME_REPLACE_PATTERN = re.compile("(?:([a-z])([A-Z]))")
 FILENAME_SPLIT_PATTERN = re.compile("[\W_]")
 
 GLOB_SPLI_PATTERN = re.compile("([*?])")
@@ -50,9 +51,13 @@ def fileNameToTitle(path):
     if len(fileName) == 0:
         return None
     
-    fileName = VIDEO_FILE_PATTERN.sub("", fileName, 1)
+    tmpStr = VIDEO_FILE_PATTERN.sub("", fileName, 1)
+    tmpStr = FILENAME_REPLACE_PATTERN.sub("\\1 \\2", tmpStr) # camelCase handling
     result = ""
-    for substr in FILENAME_SPLIT_PATTERN.split(fileName):
+    for substr in FILENAME_SPLIT_PATTERN.split(tmpStr):
+        if substr == None:
+            continue
+            
         s = substr.strip()
         length = len(s)
         if length == 0:
