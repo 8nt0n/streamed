@@ -2,6 +2,10 @@
     user-select: none;
 }
 
+input:focus {
+    outline: none;
+}
+
 html, body{
     margin: 0px;
     padding: 0px;
@@ -228,4 +232,33 @@ p{
         grid-template-columns: 330px 330px;
         grid-template-rows: 430px 430px 430px 430px 430px 430px;
     }
+}
+
+#filterInput{
+    border: solid #1c1c1c;
+    border-width: 1px 0 0 0; /* Only top border */
+    border-radius: 9px;
+    box-shadow: 0px 0px 8px #2c2c2c ;
+    padding: 12px;
+    background-color: rgb(0, 0, 0);
+    border-image: linear-gradient(90deg, #1c1c1c00 0%, #1c1c1c00 1%, #1c1c1c 2%, #f926ae 8%, #8028ee 92%, #1c1c1c 96%, #1c1c1c00 99%, #1c1c1c00 100%);
+    border-image-slice: 1;
+    color: white;
+}
+
+.Close-button{
+    border: 0px;
+    border-radius: 5px;
+    background-color: #f84434;
+    height: 30px;
+    width: 30px;
+    color: white;
+    font-weight: bolder;
+    font-size: 1rem;
+    transition: all 0.25s;
+}
+
+.Close-button:hover{
+    box-shadow: 0px 0px 9px #f84434;
+    cursor: pointer;
 }
