@@ -88,45 +88,49 @@ def writeFooter(type):
                 file.write("}")
 
 
-
-def collectInfoMap(mediaFilePath, infoType, moviepyModule):
-    if moviepyModule is not None:
-        cmn.log(f' [DBG] trying to extract movie meta data using moviepy...')
-        return infoMapFromMoviepy(mediaFilePath, moviepyModule)
-    else:
-        cmn.log(f' [DBG] trying to extract movie meta data using mediainfo command...')
-        return infoMapFromMediainfo(mediaFilePath, infoType)
-    
-
 def infoMapFromMoviepy(mediaFilePath, moviepyModule):
     infoMap = {}
     try:
         with moviepyModule.VideoFileClip(mediaFilePath) as video:
-            infoMap['Duration'] = int(video.duration) #returns a value in seconds
-#            cmn.log(f' [DBG] video.size={video.size}')
+            infoMap['Duration'] = int(video.duration) # returns a value in seconds
             infoMap['Width'] = video.size[0]
             infoMap['Height'] = video.size[1]
     except Exception as ex:
         cmn.log(f' [ERR] failed to examine {mediaFilePath}: {ex}')
         
-    cmn.log(f' [DBG] video infos for {mediaFilePath}: {infoMap}')
-        
     return infoMap
+
+
+def infoMapFromFFProbe(mediaFilePath):
+    infoMap = {}
+    infoType = "video" # the key to retrieve the video information from the JSON output of the 'ffprobe' command
+    try:
+        complProc = subprocess.run(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', mediaFilePath], capture_output = True)
+        jsonMediaObj = json.loads(complProc.stdout)
+
+        infoSections = jsonMediaObj['streams']
+        for infos in infoSections:
+            if infos['codec_type'] == infoType:
+                cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+                infoMap['Duration'] = round(float(infos['duration'])) # returns a float value in seconds
+                infoMap['Width'] = infos['width']
+                infoMap['Height'] = infos['height']
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to run 'ffprobe' (not installed or not in PATH): {ex}")
+
+    return infoMap
+
     
-    
-    
-def infoMapFromMediainfo(mediaFilePath, infoType):
+def infoMapFromMediainfo(mediaFilePath):
+    infoType = "Video" # the key to retrieve the video information from the JSON output of the 'mediainfo' command
     try:
         complProc = subprocess.run(['mediainfo', '--Output=JSON', mediaFilePath, '/dev/null'], capture_output = True)
-        jsonMediaObj = json.loads(complProc.stdout) 
-#        print(jsonMediaObj)
+        jsonMediaObj = json.loads(complProc.stdout)
 
         infoSections = jsonMediaObj[0]['media']['track']
-#        print(f'found {len(infoSections)} info sections') 
         for infos in infoSections:
             if infos['@type'] == infoType:
                 cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
-#                cmn.log(f' [DBG] video infos for {mediaFilePath}: {infos}')
                 return infos
     except Exception as ex:
         cmn.log(f" [ERR] failed to run 'mediainfo' (not installed or not in PATH): {ex}")
@@ -150,7 +154,7 @@ def findVideoFile(videoDirPath):
     return None
 
 
-def get_metainfo(mediatype, moviepyModule):
+def get_metainfo(mediatype, mediaInfoExtractor):
     mediapath = os.path.join(cmn.MEDIA_DIR_PATH, mediatype)
     os.makedirs(mediapath, exist_ok=True) # make sure path exists
     count = 1    
@@ -174,7 +178,9 @@ def get_metainfo(mediatype, moviepyModule):
             DATA['resolution'] = UNKNOWN_VALUE
                 
             videoFilePath = os.path.join(videoDirPath, videoFile)
-            mediaInfo = collectInfoMap(videoFilePath, 'Video', moviepyModule)
+            mediaInfo = mediaInfoExtractor(videoFilePath)
+            cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
+    
             if len(mediaInfo) > 0:
                 lengthInfo = UNKNOWN_VALUE
                 widthInfo = UNKNOWN_VALUE
@@ -245,9 +251,8 @@ def get_metainfo(mediatype, moviepyModule):
 # install with:
 # pip install --force-reinstall -v "moviepy==1.0.3"
 def loadMoviepyModule():
-#    if True:
-#        return None
-        
+#    return None
+    
     name = 'moviepy.editor'
     try:
         if (spec := importlib.util.find_spec(name)) is not None:
@@ -255,7 +260,7 @@ def loadMoviepyModule():
             module = importlib.util.module_from_spec(spec)
             sys.modules[name] = module
             spec.loader.exec_module(module)
-            cmn.log(f"[INFO] {name!r} has been imported")
+            cmn.log(f"[INFO] {name!r} module has been imported")
             return module
     except Exception as ex:
         print(f" [ERR] couldn't import {name!r} module: {ex}")
@@ -264,7 +269,23 @@ def loadMoviepyModule():
     return None
 
 
+
+def detectFFProbeVersion():
+#    return None
+
+    try:
+        complProc = subprocess.run(['ffprobe', '-version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").split('\n', 1)[0]
+        cmn.log(f"[INFO] found 'ffprobe' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to detect 'ffprobe' version (not installed or not in PATH): {ex}")
+        return None
+
+
 def detectMediainfoVersion():
+#    return None
+
     try:
         complProc = subprocess.run(['mediainfo', '--Version', '/dev/null'], capture_output = True)
         vers = complProc.stdout.decode("UTF-8").replace("\r", "").replace("\n", "")
@@ -282,18 +303,23 @@ def refresh():
     moviepyModule = loadMoviepyModule()
     if moviepyModule != None:
         cmn.log(f"[INFO] using 'moviepy' module to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMoviepy(mediaFilePath, moviepyModule)
+    elif detectFFProbeVersion() != None:
+        cmn.log(f"[INFO] using 'ffprobe' command to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromFFProbe(mediaFilePath)
     elif detectMediainfoVersion() != None:
         cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMediainfo(mediaFilePath)
     else:
-        # TODO: also try ffmpeg
-        cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' found, extracting media information will not be supported")
+        cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' nor 'ffprobe' found, extracting media information will not be supported")
+        mediaInfoExtractor = lambda mediaFilePath: {}
     
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(cmn.MEDIA_TYPE_MOVIES, moviepyModule) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(cmn.MEDIA_TYPE_SERIES, moviepyModule) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
