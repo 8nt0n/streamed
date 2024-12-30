@@ -48,6 +48,15 @@ def isImageFile(path):
     return os.path.isfile(path) and re.search(IMAGE_FILE_PATTERN, path) != None
 
 
+def deleteFile(path):
+    try:
+        if os.path.isfile(path):
+            os.unlink(path)
+            log(f" [DBG] file {path} deleted")
+    except Exception as ex:
+        log(f" [ERR] failed to delete file {path}: {ex}")
+    
+
 def fileNameToTitle(path):
     if path == None or len(path.strip()) == 0:
         return None

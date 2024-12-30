@@ -19,12 +19,7 @@ UNKNOWN_VALUE = "[n/a]"
 
 def clearTempData():
     for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
-        try:
-            if os.path.isfile(tmpFile):
-                os.unlink(tmpFile)
-                cmn.log(f"[INFO] temporary file {tmpFile} deleted")
-        except Exception as ex:
-            cmn.log(f"[WARN] failed to delete temporary file {tmpFile}: {ex}")
+        cmn.deleteFile(tmpFile)
             
 
 # TODO: generally buffer output
@@ -145,13 +140,15 @@ def infoMapFromMediainfo(mediaFilePath):
     return {}
 
 
-def thumbnail(metaDirPath, videoFilePath, mediaInfoMap, thumbnailSupplier):
+def thumbnail(metaDirPath, videoFilePath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
     for file in os.listdir(metaDirPath):
         imgFilePath = os.path.join(metaDirPath, file)
-#        cmn.log(f" [DBG] checking {imgFilePath}...")
         if cmn.isImageFile(imgFilePath):
-            cmn.log(f"[INFO] found thumbnail file {file}")
-            return file
+            cmn.log(f" [DBG] found thumbnail file {file}")
+            if forceThumbnailReCreation:
+                cmn.deleteFile(imgFilePath)
+            else:
+                return file
         else:
             cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
     
@@ -211,7 +208,7 @@ def findVideoFile(videoDirPath):
     return None
 
 
-def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier):
+def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation):
     mediapath = os.path.join(cmn.MEDIA_DIR_PATH, mediatype)
     os.makedirs(mediapath, exist_ok=True) # make sure path exists
     count = 1    
@@ -258,7 +255,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier):
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
 
-            thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier)
+            thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
             if thumbnailFile != None:
                 DATA['thumbnailFile'] = thumbnailFile
                 
@@ -403,8 +400,8 @@ def initThumbnailSupplier():
 
 
 
-# API:
-def refresh():
+# the actual API (the other stuff is considered to be internal or 'private'):
+def refresh(forceThumbnailReCreation):
     clearTempData()
 
     mediaInfoExtractor = initMediaInfoExtractor()
@@ -412,11 +409,11 @@ def refresh():
     thumbnailSupplier = initThumbnailSupplier()
 
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)

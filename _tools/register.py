@@ -30,7 +30,8 @@ def printHelp():
         + f" [{ARG_MOVIE_TITLE} <movie title>]"
         + f" [{ARG_MOVIE_DESCR} <movie description>]"
         + f" [{ARG_MEDIA_DIR} <media repository>]"
-        + f" [{ARG_SYMLINK}]\n"
+        + f" [{ARG_SYMLINK}]"
+        + f" [{cmn.ARG_VERBOSE}]\n"
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FOLDER} <source video folder>"
         + f" [{ARG_MEDIA_DIR} <media repository>]"
@@ -38,7 +39,8 @@ def printHelp():
         + f" [{ARG_INCL_GLOB} <include files glob>]"
         + f" [{ARG_EXCL_GLOB} <exclude files glob>]"
         + f" [{ARG_RECURSIVE}]"
-        + f" [{ARG_SYMLINK}]\n"
+        + f" [{ARG_SYMLINK}]"
+        + f" [{cmn.ARG_VERBOSE}]\n"
 
         + "This script adds new video files to the media repository.\n\n"
         + f"Arguments:\n"
@@ -51,6 +53,7 @@ def printHelp():
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
         + f"{ARG_SYMLINK}           create symlink(s) to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
+        + f"{cmn.ARG_VERBOSE}           enables a more verbose logging\n"
         + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit\n"
     )
     
@@ -142,7 +145,7 @@ def main():
             
         # at last trigger client model refresh
         cmn.log("[INFO] starting client model refresh")
-        mdl.refresh()
+        mdl.refresh(false)
     except Exception as ex:
         cmn.log(f" [ERR] failed to register movie(s): {ex}")
         sys.exit(-1)
