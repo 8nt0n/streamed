@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import glob
 import importlib.util
 import json
@@ -9,7 +11,6 @@ import time
 import uuid
 
 import lib_streamed_tools_common as cmn
-
 
 DATA_FILE_PATH = os.path.join("..", "data.js")
 TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
@@ -29,7 +30,7 @@ def clearTempData():
 # TODO: generally buffer output
 def writeData(content, mediatype):
 
-    cmn.log(f"[INFO] \'{content['name']}\': writing model data of type \'{mediatype}\' under \'{content['path']}\'...")
+    cmn.log(f"[INFO] '{content['name']}': writing model data of type '{mediatype}' under '{content['path']}'...")
 
     with open(TEMP_FILE_PATH, 'a') as file:
         file.write("        {\n")
@@ -119,6 +120,7 @@ def infoMapFromFFProbe(mediaFilePath):
                 infoMap['Duration'] = round(float(infos['duration'])) # returns a float value in seconds
                 infoMap['Width'] = infos['width']
                 infoMap['Height'] = infos['height']
+                break
     except Exception as ex:
         cmn.log(f" [ERR] failed to run 'ffprobe' (not installed or not in PATH): {ex}")
 
@@ -143,18 +145,18 @@ def infoMapFromMediainfo(mediaFilePath):
     return {}
 
 
-def thumbnail(metaDirPath, videoFilePath, thumbnailSupplier):
+def thumbnail(metaDirPath, videoFilePath, mediaInfoMap, thumbnailSupplier):
     for file in os.listdir(metaDirPath):
         imgFilePath = os.path.join(metaDirPath, file)
 #        cmn.log(f" [DBG] checking {imgFilePath}...")
-        if not cmn.isImageFile(imgFilePath):
-            cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
-        else:
+        if cmn.isImageFile(imgFilePath):
             cmn.log(f"[INFO] found thumbnail file {file}")
             return file
+        else:
+            cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
     
     try:
-        file = thumbnailSupplier(videoFilePath, metaDirPath)
+        file = thumbnailSupplier(videoFilePath, metaDirPath, mediaInfoMap)
         cmn.log(f"[INFO] created thumbnail file {file}")
         return file
     except Exception as ex:
@@ -162,8 +164,9 @@ def thumbnail(metaDirPath, videoFilePath, thumbnailSupplier):
         return None
     
     
-def thumbnailSvg(videoFilePath, metaDirPath):
-    title = cmn.fileNameToTitle(videoFilePath)
+def thumbnailSvg(videoFilePath, metaDirPath, mediaInfoMap):
+    videoDirPath = Path(videoFilePath).parent
+    title = cmn.fileNameToTitle(str(videoDirPath))
     
     svgContent = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
     <svg viewBox="0 0 270 150"
@@ -174,12 +177,9 @@ def thumbnailSvg(videoFilePath, metaDirPath):
         font-size="20" font-family="sans-serif">
       <title>{title}</title>
       <g>
-        <text x="30" y="75" textLength="210" lengthAdjust="spacingAndGlyphs" fill="#fff">{title}</text>
+        <text x="30" y="70" textLength="210" lengthAdjust="spacingAndGlyphs" fill="#eee">{title}</text>
       </g>
-    </svg>
-'''
-    
-    
+    </svg>'''      
     thumbnailFile = "thumbnail.svg"
     thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
     with open(thumbnailPath, 'a') as file:
@@ -187,7 +187,14 @@ def thumbnailSvg(videoFilePath, metaDirPath):
         
     return thumbnailFile
 
-    
+
+# see e.g. https://www.baeldung.com/linux/ffmpeg-extract-video-frames#extracting-a-single-frame
+def thumbnailFromFFMpeg(videoFilePath, metaDirPath, mediaInfoMap):
+    thumbnailFile = "thumbnail.jpeg"
+    atSecond = str(round(mediaInfoMap["Duration"] / 10))
+    complProc = subprocess.run(['ffmpeg', '-i', videoFilePath, '-ss', atSecond, '-vframes', '1', '-q:v', '5', '-s', '220x150', '-v', 'quiet', os.path.join(metaDirPath, thumbnailFile)], capture_output = False)
+    return thumbnailFile
+
 
 
 def findVideoFile(videoDirPath):
@@ -223,13 +230,12 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier):
                 continue
     
             videoFilePath = os.path.join(videoDirPath, videoFile)
-            
-            DATA['thumbnailFile'] = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, thumbnailSupplier)
 
             DATA['path'] = subfolder
             DATA['file'] = videoFile   
             DATA['length'] = UNKNOWN_VALUE
             DATA['resolution'] = UNKNOWN_VALUE            
+            DATA['thumbnailFile'] = "dummy.jpg"
             mediaInfo = mediaInfoExtractor(videoFilePath)
             cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
     
@@ -251,6 +257,10 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier):
                 # store the detected values in the model:
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
+
+            thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier)
+            if thumbnailFile != None:
+                DATA['thumbnailFile'] = thumbnailFile
                 
         #get Seasons i necessary
         if mediatype == cmn.MEDIA_TYPE_SERIES:           
@@ -316,7 +326,7 @@ def loadMoviepyModule():
             cmn.log(f"[INFO] {name!r} module has been imported")
             return module
     except Exception as ex:
-        print(f" [ERR] couldn't import {name!r} module: {ex}")
+        print(f"[INFO] couldn't import {name!r} module: {ex}")
 
     print(f"[WARN] {name!r} module not available")
     return None
@@ -332,7 +342,20 @@ def detectFFProbeVersion():
         cmn.log(f"[INFO] found 'ffprobe' version: {vers}")
         return vers
     except Exception as ex:
-        cmn.log(f" [ERR] failed to detect 'ffprobe' version (not installed or not in PATH): {ex}")
+        cmn.log(f"[INFO] failed to detect 'ffprobe' version (not installed or not in PATH): {ex}")
+        return None
+
+
+def detectFFMpegVersion():
+#    return None
+
+    try:
+        complProc = subprocess.run(['ffmpeg', '-version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").split('\n', 1)[0]
+        cmn.log(f"[INFO] found 'ffmpeg' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f"[INFO] failed to detect 'ffmpeg' version (not installed or not in PATH): {ex}")
         return None
 
 
@@ -345,14 +368,12 @@ def detectMediainfoVersion():
         cmn.log(f"[INFO] found 'mediainfo' version: {vers}")
         return vers
     except Exception as ex:
-        cmn.log(f" [ERR] failed to detect 'mediainfo' version (not installed or not in PATH): {ex}")
+        cmn.log(f"[INFO] failed to detect 'mediainfo' version (not installed or not in PATH): {ex}")
         return None
 
 
-# main entry point:
-def refresh():
-    clearTempData()
-        
+
+def initMediaInfoExtractor():
     moviepyModule = loadMoviepyModule()
     if moviepyModule != None:
         cmn.log(f"[INFO] using 'moviepy' module to extract media information")
@@ -366,18 +387,38 @@ def refresh():
     else:
         cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' nor 'ffprobe' found, extracting media information will not be supported")
         mediaInfoExtractor = lambda mediaFilePath: {}
+        
+    return mediaInfoExtractor
+    
+    
+def initThumbnailSupplier():    
+    if detectFFMpegVersion() != None:
+        cmn.log(f"[INFO] using 'ffmpeg' command to extract thumbnail images")
+        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailFromFFMpeg(mediaFilePath, metaDirPath, mediaInfoMap)
+    else:
+        cmn.log(f"[WARN] 'ffmpeg' not found, fralling back to simple SVG thumbnail generation")
+        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailSvg(mediaFilePath, metaDirPath, mediaInfoMap)
+        
+    return thumbnailSupplier        
 
-    # TODO: if available use ffmpeg to extract video frame
-    thumbnailSupplier = lambda mediaFilePath, metaDirPath: thumbnailSvg(mediaFilePath, metaDirPath)
 
+
+# API:
+def refresh():
+    clearTempData()
+
+    mediaInfoExtractor = initMediaInfoExtractor()
+    
+    thumbnailSupplier = initThumbnailSupplier()
 
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
     get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor,thumbnailSupplier) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
     cmn.log("[INFO] " + DATA_FILE_PATH + " successfully generated")
+    
