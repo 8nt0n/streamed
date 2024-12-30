@@ -136,7 +136,7 @@
 
             //spawn the image
             let summImgElem = document.createElement('img');
-            summImgElem.src = 'media/' + randomMovie.type + '/' + randomMovie.path + '/meta/thumbnail.jpg'; //TODO: different file types
+            summImgElem.src = 'media/' + randomMovie.type + '/' + randomMovie.path + '/meta/' + randomMovie.thumbnailFile;
             summImgElem.setAttribute('class', 'thumbnail')
             
             //append stuff
@@ -232,7 +232,7 @@
             //spawn parent div            
             let summElem = document.createElement("div");
             summElem.setAttribute('class', 'card media-item ' + summary.path);
-            const thumbnailPath = "media/" + summary.type + "/" + summary.path + "/meta/thumbnail.jpg"; // TODO: different file types
+            const thumbnailPath = "media/" + summary.type + "/" + summary.path + "/meta/" + summary.thumbnailFile
             summElem.style = "background: url(" + thumbnailPath + "); background-size: cover; background-repeat: no-repeat; -webkit-backdrop-filter: blur( 4px );"
             
             summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);

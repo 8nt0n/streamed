@@ -15,6 +15,7 @@ DATA_FILE_PATH = os.path.join("..", "data.js")
 TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
 UNKNOWN_VALUE = "[n/a]"
 
+
 def clearTempData():
     for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
         try:
@@ -70,6 +71,9 @@ def writeData(content, mediatype):
 
         file.write("            id: '")
         file.write(content["id"] + "',\n")
+        
+        file.write("            thumbnailFile: '")
+        file.write(content["thumbnailFile"] + "',\n")        
 
         file.write("        },\n")
 
@@ -139,6 +143,52 @@ def infoMapFromMediainfo(mediaFilePath):
     return {}
 
 
+def thumbnail(metaDirPath, videoFilePath, thumbnailSupplier):
+    for file in os.listdir(metaDirPath):
+        imgFilePath = os.path.join(metaDirPath, file)
+#        cmn.log(f" [DBG] checking {imgFilePath}...")
+        if not cmn.isImageFile(imgFilePath):
+            cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
+        else:
+            cmn.log(f"[INFO] found thumbnail file {file}")
+            return file
+    
+    try:
+        file = thumbnailSupplier(videoFilePath, metaDirPath)
+        cmn.log(f"[INFO] created thumbnail file {file}")
+        return file
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to create thumbnail file for '{videoFilePath}': {ex}")
+        return None
+    
+    
+def thumbnailSvg(videoFilePath, metaDirPath):
+    title = cmn.fileNameToTitle(videoFilePath)
+    
+    svgContent = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
+    <svg viewBox="0 0 270 150"
+        xmlns="http://www.w3.org/2000/svg"
+        version="1.1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xml:lang="de"
+        font-size="20" font-family="sans-serif">
+      <title>{title}</title>
+      <g>
+        <text x="30" y="75" textLength="210" lengthAdjust="spacingAndGlyphs" fill="#fff">{title}</text>
+      </g>
+    </svg>
+'''
+    
+    
+    thumbnailFile = "thumbnail.svg"
+    thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
+    with open(thumbnailPath, 'a') as file:
+        file.write(svgContent)
+        
+    return thumbnailFile
+
+    
+
 
 def findVideoFile(videoDirPath):
     for file in os.listdir(videoDirPath):
@@ -154,7 +204,7 @@ def findVideoFile(videoDirPath):
     return None
 
 
-def get_metainfo(mediatype, mediaInfoExtractor):
+def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier):
     mediapath = os.path.join(cmn.MEDIA_DIR_PATH, mediatype)
     os.makedirs(mediapath, exist_ok=True) # make sure path exists
     count = 1    
@@ -171,13 +221,15 @@ def get_metainfo(mediatype, mediaInfoExtractor):
             if videoFile == None:
                 cmn.log(f" [ERR] aborting processing of folder {videoDirPath}")
                 continue
+    
+            videoFilePath = os.path.join(videoDirPath, videoFile)
             
+            DATA['thumbnailFile'] = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, thumbnailSupplier)
+
             DATA['path'] = subfolder
             DATA['file'] = videoFile   
             DATA['length'] = UNKNOWN_VALUE
-            DATA['resolution'] = UNKNOWN_VALUE
-                
-            videoFilePath = os.path.join(videoDirPath, videoFile)
+            DATA['resolution'] = UNKNOWN_VALUE            
             mediaInfo = mediaInfoExtractor(videoFilePath)
             cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
     
@@ -219,6 +271,7 @@ def get_metainfo(mediatype, mediaInfoExtractor):
             DATA["Seasons"] = str(Seasons)
             DATA["Episodes"] = str(Episodes)
             DATA["SeasonEp"] = str(SeasonsEp)
+            DATA['thumbnailFile'] = "thumbnail.jpg" # FIXME: generate/extract thumbnail
             
             
         DATA["name"] = cmn.fileNameToTitle(subfolder)
@@ -313,13 +366,17 @@ def refresh():
     else:
         cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' nor 'ffprobe' found, extracting media information will not be supported")
         mediaInfoExtractor = lambda mediaFilePath: {}
-    
+
+    # TODO: if available use ffmpeg to extract video frame
+    thumbnailSupplier = lambda mediaFilePath, metaDirPath: thumbnailSvg(mediaFilePath, metaDirPath)
+
+
     writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier) #call all the metainfos 2.and
     writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor,thumbnailSupplier) #call all the metainfos 2.and
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)

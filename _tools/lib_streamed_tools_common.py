@@ -11,6 +11,7 @@ MEDIA_TYPE_SERIES = "series"
 MEDIA_DIR_PATH = os.path.join("..", "media")
 
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
+IMAGE_FILE_PATTERN = re.compile("(?i)\\.(jpe?g|png|gif|svg)$")
 FILENAME_REPLACE_PATTERN = re.compile("(?:([a-z])([A-Z]))")
 FILENAME_SPLIT_PATTERN = re.compile("[\W_]")
 
@@ -42,7 +43,11 @@ def findSysArgValue(argName, validator):
 def isVideoFile(path):
     return os.path.isfile(path) and re.search(VIDEO_FILE_PATTERN, path) != None
     
-    
+
+def isImageFile(path):
+    return os.path.isfile(path) and re.search(IMAGE_FILE_PATTERN, path) != None
+
+
 def fileNameToTitle(path):
     if path == None or len(path.strip()) == 0:
         return None
