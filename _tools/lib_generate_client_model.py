@@ -188,7 +188,7 @@ def thumbnailSvg(videoFilePath, metaDirPath, mediaInfoMap):
 # see e.g. https://www.baeldung.com/linux/ffmpeg-extract-video-frames#extracting-a-single-frame
 def thumbnailFromFFMpeg(videoFilePath, metaDirPath, mediaInfoMap):
     thumbnailFile = "thumbnail.jpeg"
-    atSecond = str(round(mediaInfoMap["Duration"] / 10))
+    atSecond = str(round(float(mediaInfoMap["Duration"]) / 10))
     complProc = subprocess.run(['ffmpeg', '-i', videoFilePath, '-ss', atSecond, '-vframes', '1', '-q:v', '5', '-s', '220x150', '-v', 'quiet', os.path.join(metaDirPath, thumbnailFile)], capture_output = False)
     return thumbnailFile
 
@@ -357,7 +357,7 @@ def detectFFMpegVersion():
 
 
 def detectMediainfoVersion():
-#    return None
+    return None
 
     try:
         complProc = subprocess.run(['mediainfo', '--Version', '/dev/null'], capture_output = True)
@@ -371,19 +371,20 @@ def detectMediainfoVersion():
 
 
 def initMediaInfoExtractor():
-    moviepyModule = loadMoviepyModule()
-    if moviepyModule != None:
-        cmn.log(f"[INFO] using 'moviepy' module to extract media information")
-        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMoviepy(mediaFilePath, moviepyModule)
+    if detectMediainfoVersion() != None:
+        cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMediainfo(mediaFilePath)
     elif detectFFProbeVersion() != None:
         cmn.log(f"[INFO] using 'ffprobe' command to extract media information")
         mediaInfoExtractor = lambda mediaFilePath: infoMapFromFFProbe(mediaFilePath)
-    elif detectMediainfoVersion() != None:
-        cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
-        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMediainfo(mediaFilePath)
     else:
-        cmn.log(f"[WARN] neither 'moviepy' module nor 'mediainfo' nor 'ffprobe' found, extracting media information will not be supported")
-        mediaInfoExtractor = lambda mediaFilePath: {}
+        moviepyModule = loadMoviepyModule() 
+        if moviepyModule != None:
+            cmn.log(f"[INFO] using 'moviepy' module to extract media information")
+            mediaInfoExtractor = lambda mediaFilePath: infoMapFromMoviepy(mediaFilePath, moviepyModule)
+        else:
+            cmn.log(f"[WARN] neither 'ffprobe' nor 'mediainfo' nor 'moviepy' module found, extracting media information will not be supported")
+            mediaInfoExtractor = lambda mediaFilePath: {}
         
     return mediaInfoExtractor
     
