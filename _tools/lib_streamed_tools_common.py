@@ -48,6 +48,15 @@ def isImageFile(path):
     return os.path.isfile(path) and re.search(IMAGE_FILE_PATTERN, path) != None
 
 
+def parentDirOf(path):
+    return os.path.abspath(os.path.join(path, os.pardir)) # means <path>/..
+
+
+def fileExtensionOf(path):
+    filename, fileExtension = os.path.splitext(path)
+    return fileExtension
+
+
 def deleteFile(path):
     try:
         if os.path.isfile(path):
@@ -55,6 +64,17 @@ def deleteFile(path):
             log(f" [DBG] file {path} deleted")
     except Exception as ex:
         log(f" [ERR] failed to delete file {path}: {ex}")
+        
+        
+def makeDirs(path):
+    if os.path.isdir(path):
+        return
+    
+    os.makedirs(path)
+    if os.path.isdir(path):
+        log(f" [DBG] one or more directories created: {path}")
+    else:
+        raise RuntimeError(f"failed to create one or more directories '{path}'")
     
 
 def fileNameToTitle(path):

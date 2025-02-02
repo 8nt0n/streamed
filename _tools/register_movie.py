@@ -5,7 +5,7 @@ import sys
 
 import lib_streamed_tools_common as cmn
 import lib_generate_client_model as mdl
-import lib_register_movie as reg
+import lib_register as reg
 
 ARG_HELP = "-h"
 ARG_HELP_LONG = "--help"
@@ -85,13 +85,13 @@ def registerFolder(dir, inclPattern, exclPattern, recursive, targetDir, createSy
             try:
                 movieTitle = cmn.fileNameToTitle(fsElem)
                 movieDescr = movieTitle
-                reg.register(path, movieTitle, movieDescr, targetDir, createSymlink)
+                reg.registerMovie(path, movieTitle, movieDescr, targetDir, createSymlink)
             except Exception as ex:
                 cmn.log(f" [ERR] failed to register movie '{fsElem}': {ex}")
         elif os.path.isdir(path) and recursive:
             registerFolder(path, inclPattern, exclPattern, recursive, targetDir, createSymlink)
         else:
-            cmn.log(f" [DBG] ignoring '{fsElem}' - neither dir nor (accapted) video file")
+            cmn.log(f" [DBG] ignoring '{fsElem}' - neither dir nor (accepted) video file")
 
 
 def main():
@@ -104,7 +104,7 @@ def main():
         srcDir = cmn.findSysArgValue(ARG_SRC_FOLDER, lambda argValue: os.path.isdir(argValue))
         
         if srcFile != None and srcDir != None:
-            raise RuntimeError("only one of the parameters 'source video file' and 'source root directory' may be provided")
+            raise RuntimeError("only one of the parameters 'source video file' and 'source video folder' may be provided")
         
         if srcFile != None:
             singleMovieMode = True
@@ -139,13 +139,13 @@ def main():
             raise RuntimeError("no valid media repository provided")
          
         if singleMovieMode:
-            reg.register(srcFile, movieTitle, movieDescr, targetDir, createSymlink)
+            reg.registerMovie(srcFile, movieTitle, movieDescr, targetDir, createSymlink)
         else:
             registerFolder(srcDir, cmn.patternFromGlob(inclGlob), cmn.patternFromGlob(exclGlob), recursive, targetDir, createSymlink)
             
         # at last trigger client model refresh
         cmn.log("[INFO] starting client model refresh")
-        mdl.refresh(false)
+        mdl.refresh(False)
     except Exception as ex:
         cmn.log(f" [ERR] failed to register movie(s): {ex}")
         sys.exit(-1)

@@ -403,9 +403,13 @@ def initThumbnailSupplier():
 
 # the actual API (the other stuff is considered to be internal or 'private'):
 def refresh(forceThumbnailReCreation):
+    cmn.log(" [DBG] clearing old temporary stuff (if there's any)...")
     clearTempData()
+    cmn.log(" [DBG] ...done")
 
+    cmn.log(" [DBG] initializing media info extractor...")
     mediaInfoExtractor = initMediaInfoExtractor()
+    cmn.log(" [DBG] ...done")
     
     thumbnailSupplier = initThumbnailSupplier()
 

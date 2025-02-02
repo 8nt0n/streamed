@@ -5,7 +5,7 @@ import sys
 import lib_streamed_tools_common as cmn
 import lib_generate_client_model as mdl
 
-def register(srcFile, movieTitle, movieDescr, targetDir, createSymlink):
+def registerMovie(srcFile, movieTitle, movieDescr, targetDir, createSymlink):
     if srcFile == None:
         raise RuntimeError("no valid video file provided")
 
@@ -48,5 +48,23 @@ def register(srcFile, movieTitle, movieDescr, targetDir, createSymlink):
         cmn.log(f"[WARN] failed to write the description text file {descrFilePath}: {ex}")     
         raise ex
         
-    # if possible create thumbnail in the 'meta' subfolder
 
+def registerEpisode(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, createSymlink):
+    cmn.log(f"[INFO] registering episode '{srcFile}' (target: '{targetSeasonDir}')")
+    
+    if srcFile == None:
+        raise RuntimeError("no valid video file provided")
+
+    # copy (or link) video file
+    targetPath = os.path.join(targetSeasonDir, str(episodeNum) + cmn.fileExtensionOf(srcFile))
+    if createSymlink: # problematic under Windows
+        symlinkPath = os.path.join(targetPath)
+        try:
+            os.symlink(srcFile, symlinkPath)
+            cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
+        except Exception as ex:
+            cmn.log(f" [ERR] failed to symlink {srcFile} to {symlinkPath}: {ex}")
+            raise ex
+    else:
+        shutil.copy2(srcFile, targetPath)  # use shutil.copy2() to preserve timestamp
+        cmn.log(f" [DBG] {srcFile} copied to {targetPath}")
