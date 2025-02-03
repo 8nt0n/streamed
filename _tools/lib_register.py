@@ -58,7 +58,7 @@ def registerEpisode(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, createSy
     # copy (or link) video file
     targetPath = os.path.join(targetSeasonDir, str(episodeNum) + cmn.fileExtensionOf(srcFile))
     if createSymlink: # problematic under Windows
-        symlinkPath = os.path.join(targetPath)
+        symlinkPath = targetPath
         try:
             os.symlink(srcFile, symlinkPath)
             cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")

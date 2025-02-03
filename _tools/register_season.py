@@ -1,4 +1,6 @@
+import functools
 import glob
+import locale
 import os
 import shutil
 import sys
@@ -94,7 +96,8 @@ def register(srcDir, seriesTargetDir, seasonNum, inclPattern, exclPattern, media
             raise ex
     
     episodeNum = 0
-    for fsElem in os.listdir(srcDir):
+    orderedFiles = sorted(os.listdir(srcDir), key = functools.cmp_to_key(locale.strcoll))
+    for fsElem in orderedFiles:
         srcPath = os.path.join(srcDir, fsElem)
         if cmn.isVideoFile(srcPath) and inclPattern.fullmatch(fsElem) != None and exclPattern.fullmatch(fsElem) == None:
             episodeNum = episodeNum + 1
