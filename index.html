@@ -212,8 +212,9 @@
                     let cover = document.createElement("img")
                     cover.src = `media/${summary.type}/${summary.path}/meta/${i+1}.jpg`
                     cover.setAttribute("id", i+1)
+                    cover.setAttribute("alt", "Staffel " + (i + 1))
                     cover.setAttribute("class", "SeasonCover")
-                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${i+1})`)
+                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${i + 1})`)
                     SeasonContainer.appendChild(cover);
                 }
                 
@@ -260,7 +261,7 @@
             if (summary.type === 'series'){
                 let summMetaElem = document.createElement('p');
                 summMetaElem.style = "font-weight: 150; font-size: 1.1rem; color: rgba( 255, 255, 255, 0.4);"
-                summMetaElem.innerHTML = summary.seasons + ' Staffeln <br> ' + summary.episodes + ' Episoden';
+                summMetaElem.innerHTML = summary.seasons + ' Staffel' + (summary.seasons === '1' ? ' ' : 'n ') + '<br> ' + summary.episodes + ' Episoden';
                 summFilterElem.appendChild(summMetaElem);
             }
             else if(summary.type === 'movies'){
@@ -294,8 +295,6 @@
             }
 
             chooseTopPick(Movies)
-            
-            
         }
 
         //fancy for if(esc pressed){hide player}

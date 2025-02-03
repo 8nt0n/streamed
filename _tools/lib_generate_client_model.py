@@ -265,21 +265,31 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             Seasons = 0
             SeasonsEp = []
             Episodes = 0
-            for i in os.listdir(videoDirPath):
-                if i != "meta":
+            
+            videoFilePath = None
+            for seasonDirName in cmn.orderedFileList(videoDirPath):
+                if seasonDirName != "meta":
 #                    Episodes += int(len(os.listdir(mediapath + "/" +  path + "/" + i)))
 #                    SeasonsEp.append(int(len(os.listdir(mediapath + "/" +  path + "/" + i))))
                     Seasons += 1
-                    count = len(os.listdir(os.path.join(videoDirPath, i)))
+                    episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
+                    count = len(episodeVideoFiles)
                     Episodes += count
-                    SeasonsEp.append(count) # TODO: check order of 'listDir' result
+                    SeasonsEp.append(count)
+                    if count > 0 and videoFilePath == None:
+                        videoFilePath = os.path.join(videoDirPath, seasonDirName, episodeVideoFiles[0])
             
             DATA["path"] = subfolder
             DATA["Seasons"] = str(Seasons)
             DATA["Episodes"] = str(Episodes)
             DATA["SeasonEp"] = str(SeasonsEp)
-            DATA['thumbnailFile'] = "thumbnail.jpg" # FIXME: generate/extract thumbnail
             
+            if videoFilePath != None:
+                mediaInfo = mediaInfoExtractor(videoFilePath)
+                thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+                if thumbnailFile != None:
+                    DATA['thumbnailFile'] = thumbnailFile
+                
             
         DATA["name"] = cmn.fileNameToTitle(subfolder)
         DATA["mediatype"] = mediatype        

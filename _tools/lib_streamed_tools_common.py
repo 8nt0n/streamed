@@ -1,3 +1,5 @@
+import functools
+import locale
 import os
 import re
 import sys
@@ -55,7 +57,20 @@ def parentDirOf(path):
 def fileExtensionOf(path):
     filename, fileExtension = os.path.splitext(path)
     return fileExtension
+    
 
+def fileBaseNameOf(path):
+    filename, fileExtension = os.path.splitext(path)
+    return filename
+    
+
+
+def orderedFileList(path):
+    if os.path.isdir(path):
+        return sorted(os.listdir(path), key = functools.cmp_to_key(locale.strcoll))
+
+    raise RuntimeError(f"failed to create ordered file list - {path} is not directory")
+    
 
 def deleteFile(path):
     try:
