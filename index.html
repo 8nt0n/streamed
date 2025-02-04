@@ -38,7 +38,7 @@
         <div id="rootContainer" class="main">
             <!--Video Player-->
             <div id="playerBg" class="playerhidden">
-                <div style="position: absolute; top: 20px; left: 20px;">
+                <div style="position: absolute; top: 12px; left: calc(100% - 45px);">
                     <button onclick="hide_player();" class="Close-button">
                         <img src="src/close.PNG" alt="close" style="width: 100%;">
                     </button>
@@ -67,7 +67,7 @@
         let playerTitle = document.getElementById('movieTitle');
         let playerDescription = document.getElementById('description');
         let videoContainer = document.getElementById('video');
-        let SeasonContainer = document.getElementById('SeasonContainer');
+        let seasonContainer = document.getElementById('SeasonContainer');
         let topPick = document.getElementById('topPick')
         
 
@@ -156,39 +156,60 @@
         };
 
 
-        let spawnEpisodes = function(summary, Ep) {
-            let n = summary.seasonEp[Ep-1]
+        let spawnEpisodes = function(summary, episodesCount) {
+            let maxEpisodeIdx = summary.seasonEp[episodesCount - 1]
             
-            SeasonContainer.innerHTML = ""
-            SeasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
+            seasonContainer.innerHTML = ""
+            // seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
+            seasonContainer.style = "height: 100%; width: 95%; display: grid; grid-gap: 6px; grid-template-rows: 9fr 1fr; padding: 12px;"
             document.getElementById('SeasonBorder').style = "margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
 
-            for(let i=0; i < n; i++){
-                
-                let EpPath = `media/${summary.type}/${summary.path}/${Ep}/${i+1}`;
+            let episodePlayer = document.createElement("video");
+            episodePlayer.setAttribute("controls", "");                
+            episodePlayer.style = "width: 90%; height: 80%; margin-top: 5%; border-radius: 6;"
 
-                let EpisodePlayer = document.createElement("video")
-                EpisodePlayer.setAttribute("controls", "");
-                
-                EpisodePlayer.src = EpPath + ".mp4";
-                EpisodePlayer.onerror = function() {
-                    EpisodePlayer.src = EpPath + ".mkv";
-                };
-                
-                EpisodePlayer.style = "width: 90%; height: 80%; margin-top: 5%; border-radius: 6;"
+            seasonContainer.appendChild(episodePlayer);
 
-                let EpPlayerContainer = document.createElement("div")
-                EpPlayerContainer.style = "width: 100%; height: 300px; border: 1px solid rgba( 255, 255, 255, 0.18 ); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(16px) saturate(180%); webkt-backdrop-filter: blur(16px) saturate(180%); background-color: rgba(17, 25, 40, 0.75); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.125)"
+            let episodeSelect = document.createElement("select");
+            seasonContainer.appendChild(episodeSelect);
 
-                let EpInfo = document.createElement("p")
-                let EpisodeNumber = i +1 
-                EpInfo.innerHTML = "S " + Ep + " | Episode " + EpisodeNumber
-                EpInfo.style = "font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left;"
+            let optGroup = document.createElement("optgroup");
+            optGroup.label = "Season [TODO: season num]"
+            episodeSelect.appendChild(optGroup);
 
-                SeasonContainer.appendChild(EpPlayerContainer);
-                EpPlayerContainer.appendChild(EpisodePlayer);
-                EpPlayerContainer.appendChild(EpInfo);
+            for (let i = 0; i < maxEpisodeIdx; i++) {
+
+                // let playerContainer = document.createElement("div")
+                // playerContainer.style = "width: 100%; height: 300px; border: 1px solid rgba( 255, 255, 255, 0.18 ); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(16px) saturate(180%); webkt-backdrop-filter: blur(16px) saturate(180%); background-color: rgba(17, 25, 40, 0.75); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.125)"
+
+                // let episodeInfo = document.createElement("p")
+                // let EpisodeNumber = i + 1 
+                // episodeInfo.innerHTML = "Staffel " + episodesCount + " | Episode " + EpisodeNumber
+                // episodeInfo.style = "font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left;"
+
+                // seasonContainer.appendChild(playerContainer);
+                // playerContainer.appendChild(episodeInfo);
+
+                let episodeOption = document.createElement("option");
+                episodeOption.value = `media/${summary.type}/${summary.path}/${episodesCount}/${i+1}`;
+                episodeOption.innerText = "Episode " + (i + 1);
+                optGroup.appendChild(episodeOption);
             }
+
+            episodeSelect.addEventListener("change", (evt) => {
+                console.dir(evt);
+
+                let episodePath = evt.srcElement.selectedOptions[0].value;      
+                console.log(episodePath);
+
+                episodePlayer.src = episodePath + ".mp4"; // TODO: get the filename from the model
+                episodePlayer.onerror = function() {
+                    episodePlayer.src = episodePath + ".mkv";
+                };
+            });
+
+            episodeSelect.selectedIndex = 0;
+            episodeSelect.dispatchEvent(new Event('change', { 'view': window, 'bubbles': true }));
         }
 
 
@@ -198,13 +219,13 @@
             playerBg.setAttribute('class', 'player');
             console.log(summary.type)
             if (summary.type == "movies"){
-                SeasonContainer.style.display = "none"
+                seasonContainer.style.display = "none"
                 document.getElementById('SeasonBorder').style.display = "none"
 
                 player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;                
             } else if (summary.type == "series") {
-                SeasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"
-                SeasonContainer.style.display = "block"
+                seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"
+                seasonContainer.style.display = "block"
                 document.getElementById('SeasonBorder').style.display = "block"
                 player.style.display = "none"
 
@@ -215,7 +236,7 @@
                     cover.setAttribute("alt", "Staffel " + (i + 1))
                     cover.setAttribute("class", "SeasonCover")
                     cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${i + 1})`)
-                    SeasonContainer.appendChild(cover);
+                    seasonContainer.appendChild(cover);
                 }
                 
             }
@@ -280,7 +301,7 @@
                 player.pause()
                 playerBg.setAttribute('class', 'playerhidden');
                 player.style.display = "inline-block";
-                SeasonContainer.innerHTML = '';
+                seasonContainer.innerHTML = '';
         }
 
         let loaded = function() {
