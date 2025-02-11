@@ -156,12 +156,12 @@
         };
 
 
-        let spawnEpisodes = function(summary, episodesCount) {
-            let maxEpisodeIdx = summary.seasonEp[episodesCount - 1]
+        let spawnEpisodes = function(summary, seasonNum) {
+            let maxEpisodeIdx = summary.seasonEp[seasonNum - 1]
             
             seasonContainer.innerHTML = ""
             // seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
-            seasonContainer.style = "height: 100%; width: 95%; display: grid; grid-gap: 6px; grid-template-rows: 9fr 1fr; padding: 12px;"
+            seasonContainer.style = "height: 92%; width: 95%; display: grid; grid-gap: 6px; grid-template-rows: 9fr 1fr; padding: 12px;"
             document.getElementById('SeasonBorder').style = "margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
 
             let episodePlayer = document.createElement("video");
@@ -174,7 +174,7 @@
             seasonContainer.appendChild(episodeSelect);
 
             let optGroup = document.createElement("optgroup");
-            optGroup.label = "Season [TODO: season num]"
+            optGroup.label = "Staffel " + seasonNum;
             episodeSelect.appendChild(optGroup);
 
             for (let i = 0; i < maxEpisodeIdx; i++) {
@@ -191,7 +191,7 @@
                 // playerContainer.appendChild(episodeInfo);
 
                 let episodeOption = document.createElement("option");
-                episodeOption.value = `media/${summary.type}/${summary.path}/${episodesCount}/${i+1}`;
+                episodeOption.value = `media/${summary.type}/${summary.path}/${seasonNum}/${i+1}`;
                 episodeOption.innerText = "Episode " + (i + 1);
                 optGroup.appendChild(episodeOption);
             }
@@ -230,12 +230,13 @@
                 player.style.display = "none"
 
                 for(let i=0; i < summary.seasons; i++){
-                    let cover = document.createElement("img")
-                    cover.src = `media/${summary.type}/${summary.path}/meta/${i+1}.jpg`
-                    cover.setAttribute("id", i+1)
-                    cover.setAttribute("alt", "Staffel " + (i + 1))
-                    cover.setAttribute("class", "SeasonCover")
-                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${i + 1})`)
+                    let cover = document.createElement("img");
+                    const seasonNum = i + 1;
+                    cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
+                    cover.setAttribute("id", seasonNum)
+                    cover.setAttribute("alt", "Staffel " + (seasonNum));
+                    cover.setAttribute("class", "SeasonCover");
+                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${seasonNum})`);
                     seasonContainer.appendChild(cover);
                 }
                 
