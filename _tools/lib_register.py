@@ -5,6 +5,8 @@ import sys
 import lib_streamed_tools_common as cmn
 import lib_generate_client_model as mdl
 
+# TODO: currently movieTitle is only used movie dir generation and gets lost after this - consider storing it to have it
+#       available during client model refresh 
 def registerMovie(srcFile, movieTitle, movieDescr, targetDir, createSymlink):
     if srcFile == None:
         raise RuntimeError("no valid video file provided")
@@ -39,10 +41,9 @@ def registerMovie(srcFile, movieTitle, movieDescr, targetDir, createSymlink):
     
     # create description text file in the 'meta' subfolder
     descrFilePath = os.path.join(metaFolder, "description.txt") # TODO: use constant
+    descrContent = cmn.readTextFile(movieDescr) if os.path.isfile(movieDescr) else movieDescr
     try:
-        with open(descrFilePath, "a") as file:
-            file.write(movieDescr)
-        
+        cmn.writeTextFile(descrFilePath, descrContent)        
         cmn.log(f" [DBG] description written to {descrFilePath}")
     except Exception as ex:
         cmn.log(f"[WARN] failed to write the description text file {descrFilePath}: {ex}")     

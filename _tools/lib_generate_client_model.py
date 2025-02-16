@@ -2,6 +2,7 @@ from pathlib import Path
 
 import glob
 import importlib.util
+import io
 import json
 import os
 import re
@@ -27,7 +28,7 @@ def writeData(content, mediatype):
 
     cmn.log(f"[INFO] '{content['name']}': writing model data of type '{mediatype}' under '{content['path']}'...")
 
-    with open(TEMP_FILE_PATH, 'a') as file:
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
         file.write("        {\n")
         
         file.write("            title: '")
@@ -76,13 +77,13 @@ def writeData(content, mediatype):
 
 #always stays the same dummy
 def writeHeader(name, type):
-    with open(TEMP_FILE_PATH, 'a') as file:
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
         if type == "start":
             file.write("{\n")
         file.write("    var " + name + " = [\n")
 
 def writeFooter(type):
-    with open(TEMP_FILE_PATH, 'a') as file:
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
             file.write("    ]\n\n")
             if type != "List":
                 file.write("}")
@@ -180,8 +181,7 @@ def thumbnailSvg(videoFilePath, metaDirPath):
     </svg>'''      
     thumbnailFile = "thumbnail.svg"
     thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
-    with open(thumbnailPath, 'a') as file:
-        file.write(svgContent)
+    cmn.writeTextFile(thumbnailPath, svgContent)
 
     cmn.log(f"[INFO] created thumbnail file {thumbnailPath}")
     return thumbnailFile
@@ -300,14 +300,12 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
         # looks if description exists  (obviously written by the one and only gpt as if i would write exceptions)
         try:
             descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt") # TODO: use constants
-            with open(descrPath, "r") as meta:
-                # Check if the first line is empty
-                line = meta.readline()
-                if line == "":
-                    cmn.log(f"[WARN] no description text found in {descrPath}")
-                    DATA["description"] = ""
-                else:
-                    DATA["description"] = line
+            descr = cmn.readTextFile(descrPath)
+            if descr == "":
+                cmn.log(f"[WARN] no description text found in {descrPath}")
+                DATA["description"] = ""
+            else:
+                DATA["description"] = descr.replace("'", "\"").replace("\n", " ").replace("  ", " ")
         except FileNotFoundError:
             cmn.log(f'[WARN] {descrPath} not found')
             

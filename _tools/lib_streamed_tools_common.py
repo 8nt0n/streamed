@@ -1,4 +1,5 @@
 import functools
+import io
 import locale
 import os
 import re
@@ -92,6 +93,16 @@ def makeDirs(path):
         raise RuntimeError(f"failed to create one or more directories '{path}'")
     
 
+def readTextFile(path):
+    with io.open(path, 'r', encoding='utf8') as sourceFile:
+        return sourceFile.read()
+
+
+def writeTextFile(path, content):
+    with io.open(path, 'w', encoding='utf8') as targetFile:
+        return targetFile.write(content)
+
+
 def fileNameToTitle(path):
     if path == None or len(path.strip()) == 0:
         return None
@@ -122,7 +133,7 @@ def fileNameToTitle(path):
 
 
 def titleToFileName(title, ext = ""):
-    return None if title == None else title.lower().replace(" ", "-")
+    return None if title == None else title.lower().replace(" ", "-").replace(":", "")
     
     
 def patternFromGlob(glob):

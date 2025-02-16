@@ -48,7 +48,7 @@ def printHelp():
         + f"{ARG_SRC_FOLDER}           path to the folder containing the video files (mandatory when adding multiple movie files to the media repository)\n"
         + f"{ARG_MEDIA_DIR}           path to the target media repository containing your streamable movies, defaults to {cmn.MEDIA_DIR_PATH}\n"
         + f"{ARG_MOVIE_TITLE}           the movie's title when adding a single movie file to the media repository (will be extracted from the source video file's name if not present)\n"
-        + f"{ARG_MOVIE_DESCR}           the movie's description when adding a single movie file to the media repository (defaults to the movie's title)\n"
+        + f"{ARG_MOVIE_DESCR}           the movie's description when adding a single movie file to the media repository, may be a string or a text file (defaults to the movie's title)\n"
         + f"{ARG_INCL_GLOB}           include only video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
