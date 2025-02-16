@@ -140,7 +140,7 @@ def infoMapFromMediainfo(mediaFilePath):
     return {}
 
 
-def thumbnail(metaDirPath, videoFilePath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
+def thumbnail(videoFilePath, metaDirPath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
     for file in os.listdir(metaDirPath):
         imgFilePath = os.path.join(metaDirPath, file)
         if cmn.isImageFile(imgFilePath):
@@ -153,17 +153,18 @@ def thumbnail(metaDirPath, videoFilePath, mediaInfoMap, thumbnailSupplier, force
             cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
     
     try:
+        #raise RuntimeError("test")
         file = thumbnailSupplier(videoFilePath, metaDirPath, mediaInfoMap)
         cmn.log(f"[INFO] created thumbnail file {file}")
         return file
     except Exception as ex:
-        cmn.log(f" [ERR] failed to create thumbnail file for '{videoFilePath}': {ex}")
-        return None
+        cmn.log(f" [ERR] failed to extract thumbnail file from '{videoFilePath}': {ex} - falling back to SVG...")
+        return thumbnailSvg(videoFilePath, metaDirPath)
     
     
-def thumbnailSvg(videoFilePath, metaDirPath, mediaInfoMap):
+def thumbnailSvg(videoFilePath, metaDirPath):
     videoDirPath = Path(videoFilePath).parent
-    title = cmn.fileNameToTitle(str(videoDirPath))
+    title = cmn.fileNameToTitle(cmn.parentDirOf(metaDirPath))
     
     svgContent = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
     <svg viewBox="0 0 270 150"
@@ -181,7 +182,8 @@ def thumbnailSvg(videoFilePath, metaDirPath, mediaInfoMap):
     thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
     with open(thumbnailPath, 'a') as file:
         file.write(svgContent)
-        
+
+    cmn.log(f"[INFO] created thumbnail file {thumbnailPath}")
     return thumbnailFile
 
 
@@ -255,7 +257,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 DATA['length'] = lengthInfo
                 DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
 
-            thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+            thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
             if thumbnailFile != None:
                 DATA['thumbnailFile'] = thumbnailFile
                 
@@ -286,7 +288,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             
             if videoFilePath != None:
                 mediaInfo = mediaInfoExtractor(videoFilePath)
-                thumbnailFile = thumbnail(os.path.join(videoDirPath, "meta"), videoFilePath, mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+                thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
                 if thumbnailFile != None:
                     DATA['thumbnailFile'] = thumbnailFile
                 
@@ -405,7 +407,7 @@ def initThumbnailSupplier():
         thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailFromFFMpeg(mediaFilePath, metaDirPath, mediaInfoMap)
     else:
         cmn.log(f"[WARN] 'ffmpeg' not found, fralling back to simple SVG thumbnail generation")
-        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailSvg(mediaFilePath, metaDirPath, mediaInfoMap)
+        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailSvg(mediaFilePath, metaDirPath)
         
     return thumbnailSupplier        
 
