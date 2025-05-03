@@ -9,9 +9,9 @@ input:focus {
 html, body{
     margin: 0px;
     padding: 0px;
-    min-height: 300%;
+    height: 100%;
     width: 100%;
-    background: url(src/bg2.png);
+    background: url(src/bg_v2.png);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -30,13 +30,16 @@ p{
 }
 
 .main{
+    position: relative;
     place-items: center;
     align-self: center;
-    margin-top: 2%;
     height: 100%;
     display: grid;
-    grid-template-columns: 330px 330px 330px 330px 330px;
-    grid-template-rows: 430px 430px 430px 430px 430px 430px;
+    grid-template-columns: 260px 260px 260px 260px 260px 260px;
+    grid-auto-rows: 350px;
+
+    margin: 0 auto;
+
 }
 
 .topbar{
@@ -50,9 +53,9 @@ p{
 
 .card{
     text-decoration: none;
-    width: 300px;
-    height: 400px;
-    box-shadow: 0 4px 16px 0 rgba(52, 52, 52, 0.4);
+    width: 200px;
+    height: 320px;
+
     transition: all 0.25s;
     
     border-radius: 10px;
@@ -72,14 +75,7 @@ p{
 
 ::-webkit-scrollbar
 {
-    background-color: black;
-    width: 10px;
-}
-
-::-webkit-scrollbar-thumb
-{
-    background-color: #5e5e5e80;
-    border-radius: 10px;
+    width: 0px;
 }
 
 .lit{
@@ -195,18 +191,12 @@ p{
 }
 
 .Filter{
-    height: 100%; 
-    width: 100%;
+    height: 250px; 
+    width: 200px;
 
     background: rgba(14, 14, 14, 0.445);
-    backdrop-filter: blur( 20px );
-    -webkit-backdrop-filter: blur( 20px );
 
     border-radius: 10px;
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
-
-    display: grid;
-    grid-template-rows: 200px 80px 60px 60px;
 
     transition: all 0.25s;
 }
@@ -218,37 +208,50 @@ p{
 }
 
 
-@media(max-width: 1800px){
+@media(max-width: 1850px){
     .main{
-        grid-template-columns: 330px 330px 330px 330px;
+        grid-template-columns: 260px 260px 260px 260px 260px;
         grid-template-rows: 430px 430px 430px 430px 430px 430px;
     }
 }
 
-@media(max-width: 1400px){
+@media(max-width: 1450px){
     .main{
-        grid-template-columns: 330px 330px 330px;
+        grid-template-columns: 260px 260px 260px 260px;
         grid-template-rows: 430px 430px 430px 430px 430px 430px;
     }
 }
 
-@media(max-width: 1100px){
+@media(max-width: 1150px){
     .main{
-        grid-template-columns: 330px 330px;
+        grid-template-columns: 260px 260px 260px;
         grid-template-rows: 430px 430px 430px 430px 430px 430px;
     }
 }
 
 #filterInput{
-    border: solid #1c1c1c;
-    border-width: 1px 0 0 0; /* Only top border */
-    border-radius: 9px;
-    box-shadow: 0px 0px 8px #2c2c2c ;
-    padding: 12px;
-    background-color: rgb(0, 0, 0);
-    border-image: linear-gradient(90deg, #1c1c1c00 0%, #1c1c1c00 1%, #1c1c1c 2%, #f926ae 8%, #8028ee 92%, #1c1c1c 96%, #1c1c1c00 99%, #1c1c1c00 100%);
-    border-image-slice: 1;
+    border-width: 0px;
+
+    width: 180px;
+    height: 30px;
+
+    background-color: transparent;
+
+    margin: 0px;
+    padding: 0px;
+    
     color: white;
+
+    position: absolute;
+    top: 5px;
+    left: 10px;
+
+    z-index: 100;
+}
+
+#filterInput::placeholder {
+    color: #cacaca;
+    font-family: Poppins;
 }
 
 .Close-button{
@@ -266,4 +269,116 @@ p{
 .Close-button:hover{
     box-shadow: 0px 0px 9px #f84434;
     cursor: pointer;
+}
+
+.site-container{
+    height: 85vh; /* 85% of viewport height */
+    width: 90vw; /* or whatever width you want */
+
+    margin: auto;
+    display: grid;
+
+    position: absolute;
+
+    grid-template-rows: 80px 300px 80px 1fr;
+
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 40px;
+    
+    padding: 0rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.077);
+
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+
+.toppick{
+    position: relative;
+
+    height: 90%; 
+    border-radius: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    overflow: hidden;
+
+    z-index: 1;
+}
+
+#topPick1{
+    width: 40%; 
+    margin-right: 60px; 
+
+    background-image: url('src/card_output.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: left;
+}
+
+#topPick2{
+    width: 50%; 
+
+    background-image: url('src/card_output2.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: left;
+}
+
+.TopPickTitle{
+    font-size: 2.25rem;
+    font-weight: 600;
+    width: 40%;
+    text-align: left;
+    margin: 0px;
+    position: absolute;
+    top: 20px;
+    left: 30px;
+
+    font-family: Poppins;
+}
+
+.Top_Pick_Play_Movie{
+    height: 12%;
+    position: absolute;
+    bottom: 40px;
+    left: 30px;
+}
+
+#searchbar-wrapper{
+    position: relative;
+
+    margin: 0px;
+    margin-left: -10%;
+
+    width: 230px;
+    height: 40px;
+
+    border-radius: 45px;
+
+    background-color: #000e1c;
+
+    overflow: hidden;
+}
+
+#profile-wrapper{
+    width: 60px;
+    height: 50%;
+
+    margin-right: 40px;
+
+    background-color: #f84434;
+}
+
+.searchbar_button{
+    background-color: transparent; 
+    border: 0px; 
+    color: #CACACA; 
+    font-family: poppins; 
+    position: absolute;
+    cursor: pointer;
+
+    z-index: 999;
 }
