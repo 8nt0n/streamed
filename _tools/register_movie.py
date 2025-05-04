@@ -34,11 +34,10 @@ def printHelp():
         + f" [{cmn.ARG_VERBOSE}]\n"
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FOLDER} <source video folder>"
-        + f" [{ARG_MEDIA_DIR} <media repository>]"
         + f" [{ARG_RECURSIVE}]"
+        + f" [{ARG_MEDIA_DIR} <media repository>]"
         + f" [{ARG_INCL_GLOB} <include files glob>]"
         + f" [{ARG_EXCL_GLOB} <exclude files glob>]"
-        + f" [{ARG_RECURSIVE}]"
         + f" [{ARG_SYMLINK}]"
         + f" [{cmn.ARG_VERBOSE}]\n"
 
