@@ -37,6 +37,9 @@ def writeData(content, mediatype):
         file.write("            path: '")
         file.write(content["path"] + "',\n")
         
+        file.write("            thumbColor: '")
+        file.write(content["thumbColor"] + "',\n")
+        
         if mediatype == "movies":
             file.write("            file: '")
             file.write(content["file"] + "',\n")        
@@ -296,6 +299,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
         DATA["name"] = cmn.fileNameToTitle(subfolder)
         DATA["mediatype"] = mediatype        
         DATA["id"] = str(count)
+        DATA['thumbColor'] = "#ffffff" # TODO: get the 'most common color' from the thumbnail image
 
         # looks if description exists  (obviously written by the one and only gpt as if i would write exceptions)
         try:
