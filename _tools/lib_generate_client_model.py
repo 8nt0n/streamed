@@ -1,4 +1,6 @@
+from collections import Counter
 from pathlib import Path
+from PIL import Image
 
 import glob
 import importlib.util
@@ -198,6 +200,17 @@ def thumbnailFromFFMpeg(videoFilePath, metaDirPath, mediaInfoMap):
     return thumbnailFile
 
 
+def thumbnailBackColor(thumbnailFile):
+    try:
+        img = Image.open(thumbnailFile).convert("RGB")
+        backColorTupel = Counter(img.getdata()).most_common(1)[0][0]
+        hexColorStr = f"#{backColorTupel[0]:{2}x}{backColorTupel[1]:{2}x}{backColorTupel[2]:{2}x}"
+        cmn.log(f" [DBG] extracted {hexColorStr} '{backColorTupel}' as the 'most common color' from thumbnail file '{thumbnailFile}'")
+        return hexColorStr
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to extract the 'most common color' from thumbnail file '{thumbnailFile}': {ex} - falling back to #000000...")
+        return "#000000"
+        
 
 def findVideoFile(videoDirPath):
     for file in os.listdir(videoDirPath):
@@ -238,6 +251,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             DATA['length'] = UNKNOWN_VALUE
             DATA['resolution'] = UNKNOWN_VALUE            
             DATA['thumbnailFile'] = "dummy.jpg"
+            DATA['thumbColor'] = "#ffffff" # TODO: get the 'most common color' from the thumbnail image
             mediaInfo = mediaInfoExtractor(videoFilePath)
             cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
     
@@ -263,6 +277,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
             if thumbnailFile != None:
                 DATA['thumbnailFile'] = thumbnailFile
+                DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
                 
         #get Seasons i necessary
         if mediatype == cmn.MEDIA_TYPE_SERIES:           
@@ -294,12 +309,11 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
                 if thumbnailFile != None:
                     DATA['thumbnailFile'] = thumbnailFile
-                
+                    DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
             
         DATA["name"] = cmn.fileNameToTitle(subfolder)
         DATA["mediatype"] = mediatype        
         DATA["id"] = str(count)
-        DATA['thumbColor'] = "#ffffff" # TODO: get the 'most common color' from the thumbnail image
 
         # looks if description exists  (obviously written by the one and only gpt as if i would write exceptions)
         try:
