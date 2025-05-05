@@ -204,7 +204,7 @@ def thumbnailBackColor(thumbnailFile):
     try:
         img = Image.open(thumbnailFile).convert("RGB")
         backColorTupel = Counter(img.getdata()).most_common(1)[0][0]
-        hexColorStr = f"#{backColorTupel[0]:{2}x}{backColorTupel[1]:{2}x}{backColorTupel[2]:{2}x}"
+        hexColorStr = f"#{backColorTupel[0]:0{2}x}{backColorTupel[1]:0{2}x}{backColorTupel[2]:0{2}x}"
         cmn.log(f" [DBG] extracted {hexColorStr} '{backColorTupel}' as the 'most common color' from thumbnail file '{thumbnailFile}'")
         return hexColorStr
     except Exception as ex:
