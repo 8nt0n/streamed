@@ -24,12 +24,12 @@
 
             <!--top bar stuff-->
             <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: space-between;">
-                <p style="font-family: Poppins; font-size: 2rem; margin: 0px; margin-left: 40px;">Streamed</p>
+                <p style="font-family: Poppins; font-size: 2rem; margin: 0px; margin-left: 40px; cursor: pointer;" onclick="location.reload();">Streamed</p>
                 
                 <div id="searchbar-wrapper">
-                    <button style="top: 9px; left: 10px;" class="searchbar_button" id="searchbar_button_movies">Movies</button>
-                    <button style="top: 9px; left: 75px;" class="searchbar_button" id="searchbar_button_series">Series</button>
-                    <button style="top: 9px; left: 130px;" class="searchbar_button" id="searchbar_button_audios">Audios</button>
+                    <button style="top: 9px; left: 10px;" class="searchbar_button" id="searchbar_button_movies" onclick="filterType('Movies')">Movies</button>
+                    <button style="top: 9px; left: 75px;" class="searchbar_button" id="searchbar_button_series" onclick="filterType('Series')">Series</button>
+                    <button style="top: 9px; left: 130px;" class="searchbar_button" id="searchbar_button_audios" onclick="filterType('Audios')">Audios</button>
                     
                     <button style="background-color: #1B2733; border: 0px; width: 32px; height: 32px; border-radius: 20px; display: flex; align-items: center; justify-content: center; right: 4px; top: 4px; margin: 0px; position: absolute; cursor: pointer;" onclick="searchiconclicked()">
                         <img src="src/search.svg" style="height: 30px; width: 30px;">
@@ -49,28 +49,29 @@
 
             <!--Top pick-->
             <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center;" id="topPick">
+                
                 <!--pick1-->
-                <div id="topPick1" class="toppick">
-                    <p class="TopPickTitle">Disnep - Kang Satay</p>
+                <div id="topPick1" class="toppick" onclick="spawnPlayer(randomMovie)">
+                    <p class="TopPickTitle" id="TopPickTitle1">Disnep - Kang Satay</p>
 
-                    <a href="#">
-                        <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie">
-                    </a>
+                    <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie" id="Top_Pick_Play_Movie1">
+                    
                 </div>
                 
+                
                 <!--pick2-->
-                <div id="topPick2" class="toppick">
-                    <p class="TopPickTitle">Disnep - Gaja Langka</p>
+                <div id="topPick2" class="toppick" onclick="spawnPlayer(randomMovie2)">
+                    <p class="TopPickTitle" id="TopPickTitle2">Disnep - Gaja Langka</p>
 
-                    <a href="#">
-                        <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie">
-                    </a>
+                    <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie" id="Top_Pick_Play_Movie2">
+                    
                 </div>
             </div>
+            
 
             <!--top bar stuff-->
             <div style="height: 100%; width: 100%;">
-                <p>mid baaar ahhh</p>
+                <p></p>
             </div>
 
 
@@ -117,20 +118,110 @@
         let SearchbarElem2 = document.getElementById("filterDiv")
         SearchbarElem.style.display = "none"
 
+
+        let randomMovie
+        let randomMovie2
+        if (Movies.length > 1) {
+            do {
+                randomMovie = Movies[Math.floor(Math.random() * Movies.length)];
+                randomMovie2 = Movies[Math.floor(Math.random() * Movies.length)];
+            } while (randomMovie === randomMovie2);
+        } else {
+            randomMovie = Movies[0];
+            randomMovie2 = Movies[0];
+        }
+        
+        
+        /*
+                 _______________
+              //~~~~~~~~~~~~~~~\\  |
+           0  / /_________________\ \| 0
+            ---------------------------
+        / /======|=D=O=D=G=E=|======\ \
+        \_____________________________/
+        \    _______       _______    /
+        |\ _/|__|__|\_____/|__|__|\_ /|
+        |      |`V'  `---'  `V'|      |
+        |______|               |______|
+       
+        */
+
+        // other cars <<<<<<< dodge charger
+
+
+        function isColorCloseToWhite(hex) {
+            hex = hex.replace(/^#/, "");
+            if (hex.length === 3) {
+              hex = hex.split("").map(c => c + c).join("");
+            }
+            if (hex.length !== 6) return false;
+          
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+          
+            const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+            return brightness > 220;
+          }
+          
+
         let chooseTopPick = function(Movies) {
 
             // 1. Top Pick
-            let TopPick = document.createElement("div");
-            TopPick.setAttribute("id","topPick1");
-            TopPick.setAttribute("class","toppick");
+            let TopPick = document.getElementById("topPick1")
 
-            const movieIdx = Math.floor(Math.random() * Movies.length);
-            const randomMovie = Movies[movieIdx];
+            
 
             console.log(randomMovie)
 
             // TODO: actually do stuff with that movie
+
+            TopPick.style = `background-image: url('media/${randomMovie.type}/${randomMovie.path}/meta/${randomMovie.thumbnailFile}'); background-color: ${randomMovie.thumbColor};`
+
+            let TopPickTitle = document.getElementById("TopPickTitle1")
+
+            if (isColorCloseToWhite(randomMovie.thumbColor)) {
+                TopPickTitle.style.color = "black"
+                document.getElementById("Top_Pick_Play_Movie1").src = "src/Play_Movie_dark.svg"
+            }
+            else {
+                TopPickTitle.style.color = "white"
+            }
+
+            TopPickTitle.innerHTML = randomMovie.title
+
+            let TopPickFade = document.createElement("div")
+            TopPickFade.style = `width: 100%; height: 100%; background: linear-gradient(to right, ${randomMovie.thumbColor} 0%, ${randomMovie.thumbColor} 55%, #ffffff00 100%);`
+
+            TopPick.appendChild(TopPickFade)
+
+            // 2. Top Pick
+            TopPick = document.getElementById("topPick2")
+
             
+
+            console.log(randomMovie2)
+
+            // TODO: actually do stuff with that movie
+
+            TopPick.style = `background-image: url('media/${randomMovie2.type}/${randomMovie2.path}/meta/${randomMovie2.thumbnailFile}'); background-color: ${randomMovie2.thumbColor};`
+
+            TopPickTitle = document.getElementById("TopPickTitle2")
+
+
+            if (isColorCloseToWhite(randomMovie2.thumbColor)) {
+                TopPickTitle.style.color = "black"
+                document.getElementById("Top_Pick_Play_Movie2").src = "src/Play_Movie_dark.svg"
+            }
+            else {
+                TopPickTitle.style.color = "white"
+            }
+            TopPickTitle.innerHTML = randomMovie2.title
+
+            TopPickFade = document.createElement("div")
+            TopPickFade.style = `width: 100%; height: 100%; background: linear-gradient(to right, ${randomMovie2.thumbColor} 0%, ${randomMovie2.thumbColor} 55%, #ffffff00 100%);`
+
+            TopPick.appendChild(TopPickFade)
             
         };
 
@@ -418,6 +509,55 @@
             for (let mediaItem of document.querySelectorAll(".media-item")) {
                 mediaItem.style.display = "block";
             }
+        }
+
+
+        let filterType = function(Type) {
+            
+            
+            if (Type == "Movies") {
+
+                document.getElementById("searchbar_button_movies").style.color = "white"
+                document.getElementById("searchbar_button_series").style.color = "#CACACA"
+                document.getElementById("searchbar_button_audios").style.color = "#CACACA"
+
+                for (let mediaItem of document.querySelectorAll(".media-item")) {
+                    mediaItem.style.display = "block";
+                }
+
+                for (let serie of Series) {
+                    document.querySelector("." + serie.path).style.display = "none";
+                }
+            }
+            
+            if (Type == "Series") {
+
+                document.getElementById("searchbar_button_movies").style.color = "#CACACA"
+                document.getElementById("searchbar_button_series").style.color = "white"
+                document.getElementById("searchbar_button_audios").style.color = "#CACACA"
+
+                for (let mediaItem of document.querySelectorAll(".media-item")) {
+                    mediaItem.style.display = "block";
+                }
+
+                for (let movie of Movies) {
+                    document.querySelector("." + movie.path).style.display = "none";
+                }
+            }
+
+            // TODO: Audios
+            /*
+            if (Type == "Audios") {
+                for (let movie of Movies) {
+                    document.querySelector("." + movie.path).style.display = "none";
+                }
+                for (let serie of Series) {
+                    document.querySelector("." + serie.path).style.display = "none";  
+                }
+
+            }
+            */
+
         }
 
     </script>

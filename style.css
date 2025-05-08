@@ -298,6 +298,8 @@ p{
 .toppick{
     position: relative;
 
+    cursor: pointer;
+
     height: 90%; 
     border-radius: 20px; 
     display: flex; 
@@ -312,19 +314,18 @@ p{
     width: 40%; 
     margin-right: 60px; 
 
-    background-image: url('src/card_output.png');
+    
     background-repeat: no-repeat;
-    background-size: cover;
-    background-position: left;
+    background-size: 45%;
+    background-position: right;
 }
 
 #topPick2{
     width: 50%; 
 
-    background-image: url('src/card_output2.png');
     background-repeat: no-repeat;
-    background-size: cover;
-    background-position: left;
+    background-size: 45%;
+    background-position: right;
 }
 
 .TopPickTitle{
