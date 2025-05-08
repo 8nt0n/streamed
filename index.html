@@ -20,7 +20,28 @@
 
     <body>
 
-        <div class="site-container">
+        <div id="playerBg" class="playerhidden">
+            <div style="position: absolute; top: 12px; left: calc(100% - 45px);">
+                <button onclick="hide_player();" class="Close-button">
+                    <img src="src/close.PNG" alt="close" style="width: 100%;">
+                </button>
+
+            </div>
+
+            <div id="video" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: top; flex-direction: column;">
+                <video width="90%" height="60%"  controls id="player" style="border-radius: 15px; background-color: black; margin-top: 60px;"></video>
+                <div id="SeasonBorder" style="margin-top: 60px; height: 70%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;">
+                    <div id="SeasonContainer" style="height: 300%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: 600px 600px 600px 600px 600px 600px 600px 600px 600px; padding: 2%;"></div>
+                </div>
+                <p style="font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 2rem;" id="movieTitle"></p>
+            </div>
+            <div id="descriptionDiv" style="width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; overflow: auto; margin: auto;" >
+                <p id="description" style="font-weight: 200; font-size: 1.2rem; color: rgb(58, 58, 58); text-align: left; margin: 5%; height: 90%;"></p>
+            </div>
+            
+        </div>
+
+        <div class="site-container" id="site-container">
 
             <!--top bar stuff-->
             <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: space-between;">
@@ -41,7 +62,8 @@
                     </div>
                 </div>
 
-                <div id="profile-wrapper">
+                <div id="profile-wrapper" onclick="location.reload();">
+                    <img src="src/home.png" style="height: 30px; cursor: pointer;">
                 </div>
             </div>
 
@@ -78,26 +100,7 @@
             
             <div id="rootContainer" class="main">
                 
-                <div id="playerBg" class="playerhidden">
-                    <div style="position: absolute; top: 12px; left: calc(100% - 45px);">
-                        <button onclick="hide_player();" class="Close-button">
-                            <img src="src/close.PNG" alt="close" style="width: 100%;">
-                        </button>
-
-                    </div>
-
-                    <div id="video" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                        <video width="90%" controls id="player" style="border-radius: 5px;"></video>
-                        <div id="SeasonBorder" style="margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;">
-                            <div id="SeasonContainer" style="height: 300%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: 600px 600px 600px 600px 600px 600px 600px 600px 600px; padding: 2%;"></div>
-                        </div>
-                        <p style="font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 2rem;" id="movieTitle"></p>
-                    </div>
-                    <div id="descriptionDiv" style="width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; overflow: auto; margin: auto;" >
-                        <p id="description" style="font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left; margin: 5%; height: 90%;"></p>
-                    </div>
-                    
-                </div>
+                
             </div>
             
 
@@ -272,11 +275,11 @@
             seasonContainer.innerHTML = ""
             // seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
             seasonContainer.style = "height: 92%; width: 95%; display: grid; grid-gap: 6px; grid-template-rows: 9fr 1fr; padding: 12px;"
-            document.getElementById('SeasonBorder').style = "margin-top: -5%; height: 60%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
+            document.getElementById('SeasonBorder').style = "margin-top: 60px; height: 70%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
 
             let episodePlayer = document.createElement("video");
             episodePlayer.setAttribute("controls", "");                
-            episodePlayer.style = "width: 90%; height: 80%; margin-top: 5%; border-radius: 6;"
+            episodePlayer.style = "width: 90%; margin-top: 5%; border-radius: 6;"
 
             seasonContainer.appendChild(episodePlayer);
 
@@ -326,6 +329,7 @@
 
         let spawnPlayer = function(summary) {
             hide_player()
+            document.getElementById("site-container").style.display = "none"
             playerBg.setAttribute('class', 'player');
             console.log(summary.type)
             if (summary.type == "movies"){
@@ -450,6 +454,7 @@
         }
 
         let hide_player = function(){
+                document.getElementById("site-container").style.display = "grid"
                 console.log("ALAAAARRRM esc wurde gepresst");
                 player.pause()
                 playerBg.setAttribute('class', 'playerhidden');

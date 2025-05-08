@@ -122,22 +122,23 @@ p{
     padding-bottom: 1%;
 
     position: fixed;
-    top: 25%;
-    left: auto;
-    right: auto;
-    bottom: auto;
+    margin: auto;
 
-    margin-top: -8%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 
-    width: 80%;
-    height: 80%;
+    padding: 0px;
 
-    background: url(src/bg2.png);
+    height: 85vh;
+    width: 90vw; 
+
+    background: transparent;
     background-size: cover;
     background-repeat: no-repeat;
     
-    border-radius: 5px;
-    border: 1px solid rgba( 255, 255, 255, 0.1);
+    border-radius: 40px;
+    border: 3px solid rgba( 255, 255, 255, 0.1);
 
     animation: fadeIn 0.5s ease 0s 1 normal forwards;
 
@@ -169,8 +170,9 @@ p{
     overflow: hidden;
     background-repeat: no-repeat; 
     background-size: contain;
-    border: 1px dotted white;
+    border: 1px solid #CACACA;
     border-radius: 5px;
+    cursor: pointer;
     transition: all 0.25s;
 }
 
@@ -365,12 +367,11 @@ p{
 }
 
 #profile-wrapper{
-    width: 60px;
-    height: 50%;
+    width: 30px;
 
+    background: url(src/home.png);
+    margin-top: 5px;
     margin-right: 40px;
-
-    background-color: #f84434;
 }
 
 .searchbar_button{
