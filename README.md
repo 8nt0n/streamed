@@ -1,4 +1,5 @@
-# Streamed
+![alt text](https://raw.githubusercontent.com/8nt0n/streamed/main/src/icon.png)
+
 A simple and lightweight media server for streaming videos from your local collection directly through a web browser. It allows you to easily manage, organize, and display movies and TV series in a clean, user-friendly interface.
 
 #### [Video Demo](https://www.youtube.com/watch?v=EzZ0E9ARLbg)
