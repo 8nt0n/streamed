@@ -147,17 +147,13 @@ def infoMapFromMediainfo(mediaFilePath):
 
 
 def thumbnail(videoFilePath, metaDirPath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
-    
-    if "thumbnail.jpg" in os.listdir(metaDirPath):
-        file = "thumbnail.jpg"
-        return file
-    
-    if "0.jpg" in os.listdir(metaDirPath):
-        file = "0.jpg"
-        return file
-    
-    for file in os.listdir(metaDirPath):
+    # (temporar) shortcut for handling well known thumbnail file names:
+    for wellknownThumbNailName in ["thumbnail.jpg", "0.jpg"]:
+        if cmn.isImageFile(os.path.join(metaDirPath, wellknownThumbNailName)):
+            cmn.log(f" [DBG] found (well known) thumbnail file {wellknownThumbNailName}")
+            return wellknownThumbNailName
         
+    for file in os.listdir(metaDirPath):
         imgFilePath = os.path.join(metaDirPath, file)
         if cmn.isImageFile(imgFilePath):
             cmn.log(f" [DBG] found thumbnail file {file}")

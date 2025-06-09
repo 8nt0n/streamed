@@ -384,3 +384,15 @@ p{
 
     z-index: 999;
 }
+
+.disable-scrollbars *::-webkit-scrollbar {
+  background: transparent; /* Chrome/Safari/Webkit */
+  width: 0;
+  height: 0;
+}
+    
+.disable-scrollbars * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+
