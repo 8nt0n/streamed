@@ -1,18 +1,15 @@
 ![Icon](https://raw.githubusercontent.com/8nt0n/streamed/main/src/icon.png)
 
-A simple and lightweight media server for streaming videos from your local collection directly through a web browser. It allows you to easily manage, organize, and display movies and TV series in a clean, user-friendly interface.
 
-#### [Video Demo](https://www.youtube.com/watch?v=EzZ0E9ARLbg)
-
----
-
-## [Live Demo](https://streamed-demo.netlify.app/)
+## [Video Demo](https://www.youtube.com/watch?v=EzZ0E9ARLbg)
 
 ![Screenshot](https://raw.githubusercontent.com/8nt0n/8nt0n/refs/heads/main/github%20desc/demo_screenshot.png)
 
+## [Live Demo](https://streamed-demo.netlify.app/)
+
 ## Overview
 
-Streamed is designed to be straightforward to use, making it a perfect solution for those who want a self-hosted media server without the complexity of larger platforms. Simply run the server, and it generates an interactive webpage where you can browse and play your media files seamlessly.
+Streamed is a painfully simple media server that lets you stream your local video hoard from a web browser. No subscription, no account, no nonsense, just run it and boom - your questionable anime collection is now wirelessly accessible
 
 ---
 
@@ -73,19 +70,16 @@ These files are used to automate the process of generating and updating the cont
 ## How to use:
 Place your video files in the designated folder.
 Run update.bat (or manually execute main.py) to update data.js with the latest metadata.
+
 4. thanks.py
-This is a small, fun utility script that simply prints "no problem" after being executed. It's a playful way to confirm that you've successfully debugged or fixed an issue in the project. It serves no critical function, but it's a reminder to enjoy the process of coding!
+What’s it do? Nothing. It just says:
 
-## Usage:
-After resolving an issue or completing a debugging session, run:
 
-```bash
-python thanks.py
-```
-And you'll see the output:
 ```bash
 No problem!
 ```
+Run it after fixing bugs. It's your emotional support script.
+
 
 ## How It Works
 Streamed works by serving a simple webpage that lists your media collection. The backend logic (handled by main.py) scans your local media folder, extracts metadata, and creates a data.js file that contains the necessary details about your media. This data is then injected into index.html dynamically, creating a media catalog on-the-fly.
@@ -100,4 +94,4 @@ You can modify the styling in style.css to match your personal preferences or tw
 If you'd like to contribute to this project, feel free to submit a pull request! Contributions are welcome, whether it's improving the design, adding new features, or fixing bugs. Be sure to follow the project's coding guidelines and maintain clean, readable code.
 
 ## License
-Streamed is distributed under the MIT License. See the full license details in the LICENSE file.
+MIT. Do what you want. Just don’t blame me if it catches fire.
