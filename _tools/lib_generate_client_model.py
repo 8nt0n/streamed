@@ -7,10 +7,8 @@ import importlib.util
 import io
 import json
 import os
-import re
 import subprocess
 import sys
-import time
 import uuid
 
 import lib_streamed_tools_common as cmn
@@ -147,11 +145,11 @@ def infoMapFromMediainfo(mediaFilePath):
 
 
 def thumbnail(videoFilePath, metaDirPath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
-    # (temporar) shortcut for handling well known thumbnail file names:
-    for wellknownThumbNailName in ["thumbnail.jpg", "0.jpg"]:
-        if cmn.isImageFile(os.path.join(metaDirPath, wellknownThumbNailName)):
-            cmn.log(f" [DBG] found (well known) thumbnail file {wellknownThumbNailName}")
-            return wellknownThumbNailName
+    # # (temporar) shortcut for handling well known thumbnail file names:
+    # for wellknownThumbNailName in ["thumbnail.jpg", "0.jpg"]:
+    #     if cmn.isImageFile(os.path.join(metaDirPath, wellknownThumbNailName)):
+    #         cmn.log(f" [DBG] found (well known) thumbnail file {wellknownThumbNailName}")
+    #         return wellknownThumbNailName
         
     for file in os.listdir(metaDirPath):
         imgFilePath = os.path.join(metaDirPath, file)

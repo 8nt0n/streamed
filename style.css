@@ -3,10 +3,10 @@
 }
 
 input:focus {
-    outline: none;
+/*    outline: none;*/
 }
 
-html, body{
+html, body {
     margin: 0px;
     padding: 0px;
     height: 100%;
@@ -22,12 +22,261 @@ html, body{
     font-family: Inter;
 }
 
-p{
-    font-weight: 1.2rem;
+p {
     font-size: 1.2rem;
     color: white;
     text-align: center;
 }
+
+
+.disable-scrollbars *::-webkit-scrollbar {
+  background: transparent; /* Chrome/Safari/Webkit */
+  width: 0;
+  height: 0;
+}
+    
+.disable-scrollbars * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+
+
+.clickable {
+    cursor: pointer;
+    background-color: #1B2733;
+    opacity: 0.5;
+    border-width: 0;
+}
+
+.clickable:hover {
+    opacity: 0.8;
+}
+
+
+.clickable-movie {
+    opacity: 0.9;
+}
+
+.clickable-movie:hover {
+    opacity: 1;
+}
+
+
+.clickable-text-div {
+    width: 30px; 
+    height: 30px;
+    border-radius: 100%;
+    color: darkgray;
+    text-align: center;
+    font-weight: bolder;
+    padding: 6px 5px 0 5px;
+}
+
+.close-player-overlay {
+    position: absolute; 
+    top: 12px; 
+    left: calc(100% - 56px); 
+}
+
+.close-player-overlay:hover {
+    border-color: lightgray;
+    color: white;
+}
+
+
+.video-player-container {
+    color: rgba( 255, 255, 255, 0.7 );
+    font-weight: 100;
+    display: flex; 
+    align-items: center;
+/*    justify-content: top; */
+    flex-direction: column;
+}
+
+.video-player {
+    border-radius: 15px; 
+    background-color: black; 
+    margin-top: 60px;
+}
+
+
+.season-border {
+    margin-top: 60px; 
+    height: 70%; 
+    width: 90%; 
+    border-radius: 5px; 
+    border: 1px solid rgba( 255, 255, 255, 0.18 ); 
+    overflow: auto; 
+    max-height: 800px;
+}
+
+.season-container {
+    height: 300%; 
+    width: 95%; 
+    display: grid; 
+    grid-gap: 1%; 
+    grid-template-columns: 1fr 1fr 1fr 1fr; 
+    grid-template-rows: 600px 600px 600px 600px 600px 600px 600px 600px 600px; 
+    padding: 2%;
+}
+
+
+.movie-title {
+    font-size: 2rem;
+    font-weight: 800; 
+    text-shadow: 0px 0px 3px white;
+}
+
+.description-container {
+    width: 100%; 
+    height: 80%; 
+    display: flex; 
+    margin: 15% 0 10% 0;
+}
+
+.movie-description {
+    font-size: 1.2rem;
+    font-weight: 200;  
+    color: rgb(58, 58, 58); 
+    text-align: left; 
+    margin: 5% 5% 100px 5%;
+}
+
+
+.site-container{
+    height: 85vh; /* 85% of viewport height */
+    width: 90vw; /* or whatever width you want */
+    margin: auto;
+    display: grid;
+    position: absolute;
+    grid-template-rows: 80px 300px 80px 1fr;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 40px;
+    padding: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.077);
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+
+.top-bar {
+    height: 100%; 
+    width: 100%; 
+
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+}
+
+.top-bar-title {
+    font-family: Poppins;
+    font-size: 2rem;
+    margin: 0;
+    margin-left: 40px;
+    background-color: transparent;
+}
+
+
+.searchbar-container > button {
+    position: absolute;
+    border: 0;
+}
+
+.searchbar-container > button.filter-by-type {
+    background-color: transparent;     
+    color: #CACACA; 
+    font-family: poppins;
+    top: 9px;
+    z-index: 999;
+}
+
+.searchbar-container > button.movies-filter {
+    left: 10px;
+}
+
+.searchbar-container > button.series-filter {
+    left: 75px;
+}
+
+.searchbar-container > button.audios-filter {
+    left: 130px;
+}
+
+.searchbar-container > button.toggle-filter-mode {
+    width: 32px; 
+    height: 32px;
+    border-radius: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    right: 4px;
+    top: 4px;
+    margin: 0px;
+}
+
+.filter-input-container {
+    height: 100%; 
+    width: 190px;
+}
+
+
+.top-pick-container {
+    display: flex; 
+    flex-direction: row;
+    align-items: center; 
+    justify-content: center;
+}
+
+.top-pick {
+    position: relative;
+    height: 90%; 
+    flex: 1  530px;
+    display: flex; 
+    flex-direction: column;
+    align-items: flex-start; 
+    justify-content: space-between; 
+    overflow: hidden;
+    margin: 40px;
+    border-radius: 20px; 
+    z-index: 1;
+    background-repeat: no-repeat;
+    background-size: 45%;
+    background-position: right;
+}
+
+.top-pick:nth-of-type(2) {
+    margin-left: 0;
+}
+
+.top-pick-title-container {
+    width: 40%;
+    min-height: 80%;
+    margin: 0 20px;
+    overflow: auto;
+    flex: 3;
+}
+
+.top-pick-title {
+    font-family: Poppins;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: left;
+    margin: 0;
+}
+
+.top-pick-play {
+    margin: 0 20px;
+    flex: 1;
+}
+
+
+div.fullsize-panel {
+    height: 100%; 
+    width: 100%;
+}
+
 
 .main{
     position: relative;
@@ -42,7 +291,10 @@ p{
 
 }
 
-.topbar{
+
+/* FIXME: currently not properly rendered */
+/* 
+.top-bar{
     z-index: 99999999999999999999999999;
     width: 100%;
     background-color: rgb(0, 0, 0);
@@ -50,33 +302,107 @@ p{
     align-items: center;
     box-shadow: 0px 3px 2px rgb(0, 0, 0);
 }
+*/
 
-.card{
-    text-decoration: none;
+
+.media-item {
+    position: relative;
     width: 200px;
     height: 320px;
-
-    transition: all 0.25s;
-    
+    background-color: white;
+    transition: all 0.25s;  
     border-radius: 10px;
-
-    margin: 0px;
+    margin: 0;
+    text-decoration: none;
 }
 
-.card:hover{
-    cursor: pointer;
+.media-item:hover {
     transition: all 0.25s;
 }
 
-#video {
-    color: rgba( 255, 255, 255, 0.7 );
-    font-weight: 100;
+
+.listitem-thumbnail-panel {
+    height: 250px; 
+    width: 200px;
+    border-radius: 10px;
+    transition: all 0.25s;
+    background-color: rgba(14, 14, 14, 0.445);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
+
+.media-item > p {
+    position: absolute;
+    width: 100%;
+    color: rgb(78, 75, 75);
+    text-align: center;
+    margin: 0px;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    font-family: poppins;
+}
+
+.listitem-title-panel {
+    bottom: 26px;
+    left: 3px;
+    font-weight: 400;
+    font-size: 20px;
+}
+
+.listitem-details-panel {
+    bottom: 0px;
+    left: 3px;
+    font-weight: 200;
+    font-size: 15px;
+}
+
+.listitem-resolution-icon {
+    position: absolute;
+    bottom: 6px;
+    left: 3px;
+    z-index: 99;
+    width: 40px;
+}
+
+
+.season-container {
+    height: 92%; 
+    width: 95%; 
+    display: grid; 
+    grid-gap: 6px; 
+    grid-template-rows: 9fr 1fr; 
+    padding: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 ::-webkit-scrollbar
 {
     width: 0px;
 }
+*/
+
 
 .lit{
     margin-top: -3%;
@@ -192,16 +518,6 @@ p{
     opacity: 1;
 }
 
-.Filter{
-    height: 250px; 
-    width: 200px;
-
-    background: rgba(14, 14, 14, 0.445);
-
-    border-radius: 10px;
-
-    transition: all 0.25s;
-}
 
 .Filter:hover{
     background: rgba(52, 52, 52, 0.363);
@@ -256,99 +572,6 @@ p{
     font-family: Poppins;
 }
 
-.Close-button{
-    border: 0px;
-    border-radius: 5px;
-    background-color: #f84434;
-    height: 30px;
-    width: 30px;
-    color: white;
-    font-weight: bolder;
-    font-size: 1rem;
-    transition: all 0.25s;
-}
-
-.Close-button:hover{
-    box-shadow: 0px 0px 9px #f84434;
-    cursor: pointer;
-}
-
-.site-container{
-    height: 85vh; /* 85% of viewport height */
-    width: 90vw; /* or whatever width you want */
-
-    margin: auto;
-    display: grid;
-
-    position: absolute;
-
-    grid-template-rows: 80px 300px 80px 1fr;
-
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 40px;
-    
-    padding: 0rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.077);
-
-    overflow-y: scroll;
-    overflow-x: hidden;
-}
-
-
-.toppick{
-    position: relative;
-
-    cursor: pointer;
-
-    height: 90%; 
-    border-radius: 20px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    overflow: hidden;
-
-    z-index: 1;
-}
-
-#topPick1{
-    width: 40%; 
-    margin-right: 60px; 
-
-    
-    background-repeat: no-repeat;
-    background-size: 45%;
-    background-position: right;
-}
-
-#topPick2{
-    width: 50%; 
-
-    background-repeat: no-repeat;
-    background-size: 45%;
-    background-position: right;
-}
-
-.TopPickTitle{
-    font-size: 2.25rem;
-    font-weight: 600;
-    width: 40%;
-    text-align: left;
-    margin: 0px;
-    position: absolute;
-    top: 20px;
-    left: 30px;
-
-    font-family: Poppins;
-}
-
-.Top_Pick_Play_Movie{
-    height: 12%;
-    position: absolute;
-    bottom: 40px;
-    left: 30px;
-}
 
 #searchbar-wrapper{
     position: relative;
@@ -372,27 +595,5 @@ p{
     background: url(src/home.png);
     margin-top: 5px;
     margin-right: 40px;
-}
-
-.searchbar_button{
-    background-color: transparent; 
-    border: 0px; 
-    color: #CACACA; 
-    font-family: poppins; 
-    position: absolute;
-    cursor: pointer;
-
-    z-index: 999;
-}
-
-.disable-scrollbars *::-webkit-scrollbar {
-  background: transparent; /* Chrome/Safari/Webkit */
-  width: 0;
-  height: 0;
-}
-    
-.disable-scrollbars * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE 10+ */
 }
 
