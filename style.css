@@ -142,7 +142,7 @@ p {
 
 .movie-description {
     font-size: 1.2rem;
-    font-weight: 200;  
+    font-weight: 300;
     color: rgb(58, 58, 58);
     text-align: left; 
     margin: 5% 5% 100px 5%;
@@ -378,7 +378,7 @@ div.fullsize-panel {
 
 
 
-.season-border {
+.season-container {
     margin-top: 60px; 
     width: 90%; 
     padding: 20px;
@@ -392,20 +392,10 @@ div.fullsize-panel {
     justify-content: space-between; 
 }
 
-/*
-.season-container {
-    height: 92%; 
-    width: 95%; 
-    display: flex;
-    flex-direction: row;
-}
-*/
-
 .episode-player {
     width: 65%;
     border-radius: 6px;
     margin-top: 0;
-    margin-right: 20px;
 }
 
 .episodes-container {
@@ -418,21 +408,44 @@ div.fullsize-panel {
     justify-content: space-between; 
 }
 
+.season-number-panel {
+    padding: 15px 10px;
+}
+
 .series-option {
     width: 90%;
     height: 50px;
-    border: 1px solid rgb(58, 58, 58);
+/*    border: 1px solid rgb(58, 58, 58);*/
     padding: 5px;
-    margin: 1px;
+    margin: 5px 1px 1px 1px;
+    background-color: rgba(212, 210, 210, 0.5);
+    color: rgb(58, 58, 58);
+    font-family: Poppins;
+    font-weight: 400;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: left;
+}
+
+.series-option:first-child {
+    margin: 0 1px 1px 1px;
+    border-radius: 6px 6px 0 0;
 }
 
 .episode-option {
-    height: 30px;
+    height: 20px;
+    border-top: 0;
+    border-radius: 0;
+    margin: 0 1px 0 30px;
+}
+
+.episode-option:last-child {
+    border-radius: 0 0 6px 6px;
 }
 
 .season-thumbnail {
-    height: 100%; 
-
+    height: 100%;
 }
 
 

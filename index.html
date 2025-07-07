@@ -37,10 +37,7 @@
                 <div id="video" class="video-player-container fullsize-panel">
                     <video id="player" width="90%" height="60%" class="video-player flex-color" controls></video>
 
-                    <div id="seasonBorder" class="season-border">
-                        <!--
-                        <div id="seasonContainer" class="season-container"></div>
-                        -->
+                    <div id="seasonContainer" class="season-container">
                     </div>
                     
                     <p id="movieTitle" class="movie-title"></p>
@@ -159,9 +156,7 @@
         const playerTitle = document.getElementById("movieTitle");
         const playerDescription = document.getElementById("movieDescription");
         const videoContainer = document.getElementById("video");
-//        const seasonContainer = document.getElementById("seasonContainer");
-//        const seasonBorder = document.getElementById('seasonBorder');
-        const seasonContainer = document.getElementById("seasonBorder");
+        const seasonContainer = document.getElementById("seasonContainer");
 
         const topPick = document.getElementById("topPick");
         const filterInputContainer = document.getElementById("filterInputContainer");
@@ -216,65 +211,6 @@
         }
 
 
-        /*
-        let spawnEpisodes = function(summary, seasonNum) {
-            let maxEpisodeIdx = summary.seasonEp[seasonNum - 1]
-            
-            seasonContainer.innerHTML = "";
-            seasonContainer.setAttribute("class", "season-container");
-            seasonBorder.setAttribute("class", "season-border");
-
-            let episodePlayer = document.createElement("video");
-            episodePlayer.setAttribute("controls", "");                
-            episodePlayer.style = ""
-            episodePlayer.setAttribute("class", "episode-player");
-
-            seasonContainer.appendChild(episodePlayer);
-
-            let episodeSelect = document.createElement("select");
-            seasonContainer.appendChild(episodeSelect);
-
-            let optGroup = document.createElement("optgroup");
-            optGroup.label = "Staffel " + seasonNum;
-            episodeSelect.appendChild(optGroup);
-
-            for (let i = 0; i < maxEpisodeIdx; i++) {
-
-                // let playerContainer = document.createElement("div")
-                // playerContainer.style = "width: 100%; height: 300px; border: 1px solid rgba( 255, 255, 255, 0.18 ); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(16px) saturate(180%); webkt-backdrop-filter: blur(16px) saturate(180%); background-color: rgba(17, 25, 40, 0.75); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.125)"
-
-                // let episodeInfo = document.createElement("p")
-                // let EpisodeNumber = i + 1 
-                // episodeInfo.innerHTML = "Staffel " + episodesCount + " | Episode " + EpisodeNumber
-                // episodeInfo.style = "font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left;"
-
-                // seasonContainer.appendChild(playerContainer);
-                // playerContainer.appendChild(episodeInfo);
-
-                let episodeOption = document.createElement("option");
-                episodeOption.value = `media/${summary.type}/${summary.path}/${seasonNum}/${i+1}`;
-                episodeOption.innerText = "Episode " + (i + 1);
-                optGroup.appendChild(episodeOption);
-            }
-
-            episodeSelect.addEventListener("change", (evt) => {
-                console.dir(evt);
-
-                let episodePath = evt.srcElement.selectedOptions[0].value;      
-                console.log(episodePath);
-
-                episodePlayer.src = episodePath + ".mp4"; // TODO: get the filename from the model
-                episodePlayer.onerror = function() {
-                    episodePlayer.src = episodePath + ".mkv";
-                };
-            });
-
-            episodeSelect.selectedIndex = 0;
-            episodeSelect.dispatchEvent(new Event('change', { 'view': window, 'bubbles': true }));
-        }
-*/
-
-
         let spawnPlayer = function(summary) {
             console.log(summary.type)
 
@@ -284,11 +220,9 @@
             playerBg.setAttribute('class', 'player');
             
             if (summary.type == "movies") {
-//                seasonBorder.style.display = "none"
                 seasonContainer.style.display = "none"
                 player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;                
             } else if (summary.type == "series") {
-//                seasonBorder.style.display = "block"
                 seasonContainer.style.display = "flex"
                 player.style.display = "none"
 
@@ -315,7 +249,8 @@
                     cover.setAttribute("class", "season-thumbnail");
                     seasonOption.appendChild(cover);
 
-                    let seasonNumText = document.createElement("span");
+                    let seasonNumText = document.createElement("div");
+                    seasonNumText.setAttribute("class", "season-number-panel");
                     seasonNumText.innerText = `Season ${seasonNum}`;
                     seasonOption.appendChild(seasonNumText);
 
@@ -331,8 +266,6 @@
                         );
                         episodesContainer.appendChild(episodeOption);
                     }
-//                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${seasonNum})`);
-//                    seasonContainer.appendChild(cover);
                 }                
                 seasonContainer.appendChild(episodesContainer);
 
