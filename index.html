@@ -30,27 +30,35 @@
 
             <div class="grouping-panel fullsize-panel">
 
-                <div id="playerBg" class="player-hidden">
-                    <div id="closePlayerOverlay" class="close-player-overlay flex-color clickable clickable-text-div" onclick="hidePlayer();">
-                        <span>x</span>
-                    </div>
+                <div id="playerBg" class="player-panel-hidden">
 
-                    <div id="video" class="fullsize-panel video-player-container">
-                        <video id="player" width="90%" height="60%" class="video-player flex-color" controls></video>
-
-                        <div id="seasonContainer" class="season-container">
+                    <div class="fullsize-panel">
+                        <div id="closePlayerBtn" 
+                            class="close-player-button flex-color clickable clickable-text-div" 
+                            onclick="hidePlayer();">
+                            <span>x</span>
                         </div>
-                        
+                                                
                         <div class="default-margin">
                             <div id="movieTitle" class="movie-title"></div>
                         </div>
 
-                        <div id="descriptionDiv" class="default-margin description-container">
-                            <div id="movieDescription" class="movie-description"></div>
+                        <div class="video-details-container">
+
+                            <div class="default-margin video-detail video-player-container">
+                                <video id="videoElement" class="video-player" controls></video>
+                            </div>
+
+                            <div id="seasonContainer" class="default-margin video-detail season-container"></div>
+
+                            <div id="descriptionDiv" class="default-margin video-detail">
+                                <div id="movieDescription" class="movie-description"></div>
+                            </div>
+
                         </div>
                     </div>
-                </div>
 
+                </div>
 
                 <div id="siteContainer" class="site-container">
 
@@ -146,10 +154,9 @@
         // some HTML elements:
         const siteContainer = document.getElementById("siteContainer");
         const playerBg = document.getElementById("playerBg");
-        const player = document.getElementById("player");
+        const player = document.getElementById("videoElement");
         const playerTitle = document.getElementById("movieTitle");
         const playerDescription = document.getElementById("movieDescription");
-        const videoContainer = document.getElementById("video");
         const seasonContainer = document.getElementById("seasonContainer");
 
         const topPick = document.getElementById("topPick");
@@ -206,29 +213,19 @@
 
 
         let spawnPlayer = function(summary) {
-            console.log(summary.type)
-
-            hidePlayer()
-
             siteContainer.style.display = "none"
-            playerBg.setAttribute('class', 'player');
+            playerBg.setAttribute('class', 'player-panel');
+
+            playerTitle.innerHTML = summary.title;
+            playerDescription.innerHTML = summary.description;
             
             if (summary.type == "movies") {
                 seasonContainer.style.display = "none"
-                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;                
+                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;
             } else if (summary.type == "series") {
                 seasonContainer.style.display = "flex"
-                player.style.display = "none"
 
-                const episodePlayer = document.createElement("video");
-                episodePlayer.setAttribute("controls", "");                
-                episodePlayer.style = "";
-                episodePlayer.setAttribute("class", "episode-player video-player flex-color");
-
-                seasonContainer.appendChild(episodePlayer);
-
-
-                // TODO: create a (nice!) single selection element containing all of the episodes of all of the seasons
+                // single selection element containing all of the episodes of all of the seasons:
                 let episodesContainer = document.createElement("div");
                 episodesContainer.setAttribute("class", "episodes-container");
 
@@ -256,23 +253,23 @@
                         episodeOption.innerText = `Episode ${episodeNum + 1}`;
                         episodeOption.addEventListener(
                             "click", 
-                            () => preparePlayer(episodePlayer, `media/${summary.type}/${summary.path}/${seasonNum}/${episodeNum + 1}`)
+                            () => prepareEpisode(summary, seasonNum, episodeNum + 1)
                         );
                         episodesContainer.appendChild(episodeOption);
                     }
                 }                
                 seasonContainer.appendChild(episodesContainer);
 
-                preparePlayer(episodePlayer, `media/${summary.type}/${summary.path}/${1}/${1}`);
+                prepareEpisode(summary, 1, 1);
             }
-
-            playerTitle.innerHTML = summary.title;
-            
-            playerDescription.innerHTML = summary.description;
-            document.getElementById("descriptionDiv").appendChild(playerDescription);
         }
 
-        let preparePlayer = function(player, playerSrc) {
+        let prepareEpisode = function(seriesSummary, seasonNum, episodeNum) {
+            preparePlayer(`media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}`);
+            playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+        }
+
+        let preparePlayer = function(playerSrc) {
             console.log(playerSrc);
             player.src = playerSrc + ".mp4"; // TODO: get the filename from the model
             player.onerror = function() {
@@ -283,7 +280,7 @@
         let hidePlayer = function() {
             siteContainer.style.display = "grid"
             player.pause()
-            playerBg.setAttribute("class", "player-hidden");
+            playerBg.setAttribute("class", "player-panel-hidden");
             player.style.display = "inline-block";
             seasonContainer.innerHTML = "";
         }        
@@ -435,7 +432,7 @@
         }
 
 
-
+        ///////////////////////////////////////////////////
         // utils:
         let isColorCloseToWhite = function (hex) {
             hex = hex.replace(/^#/, "");
@@ -484,10 +481,10 @@
         }
 
 
-
+        ///////////////////////////////////////////////////
         // start rendering UI:
-        loaded();
-
+//        loaded();
+        addEventListener("load", () => loaded());
 
     </script>
 
