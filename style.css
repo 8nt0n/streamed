@@ -1,4 +1,11 @@
 
+/* defines some color variables */
+:root {
+  --default-color-light: rgb(223, 220, 220);
+  --default-color-dark: rgb(50, 56, 63);
+}
+
+
 * {
     user-select: none; /* makes text unselectable */
 }
@@ -7,40 +14,19 @@ input:focus {
     outline: none; /* no special border marking of focused input elements */
 }
 
-
-html, body {
+body {
     min-height: 100vh; /* 100% of the viewport height */
     margin: 0;
     padding: 0;
-    background: url(src/bg_v2.png);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    background: content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189));
+}
+
+
+.stylable-root-panel {
+    width: auto;
+    height: 100%;
+    padding: 30px;
     font-family: Inter;
-}
-
-p {
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-.default-color-mode p {
-    color: white;
-}
-
-.dark-color-mode p {
-    color: black;
-}
-
-
-.default-color-mode .flex-color {
-    background-color: rgb(58, 58, 58);
-    color: rgb(212, 210, 210);
-}
-
-.dark-color-mode  .flex-color {
-    background-color: rgb(212, 210, 210);
-    color: rgb(58, 58, 58);
 }
 
 
@@ -56,6 +42,12 @@ p {
 }
 
 
+
+.fullsize-panel {
+    height: 100%; 
+    width: 100%;
+}
+
 .default-margin {
     margin: 15px;
 }
@@ -63,40 +55,35 @@ p {
 
 .clickable {
     cursor: pointer;
+    font-weight: 300;
     opacity: 0.8;
     border-width: 0;
 }
 
 .clickable:hover {
+    font-weight: 600;
     opacity: 1;
 }
 
 
 .clickable-text {
-    opacity: 1;
+    color: var(--default-color-light);
 }
 
-.clickable-text:hover {
-    text-decoration: underline;
-}
-
-
-.default-color-mode .clickable-text {
-    color: rgb(212, 210, 210);
-}
-
-.dark-color-mode .clickable-text {
-    color: rgb(58, 58, 58);
-}
 
 .clickable-text-div {
     width: 30px; 
     height: 30px;
+    padding: 5px 5px 0 5px;
     border-radius: 100%;
     text-align: center;
     font-weight: bolder;
-    padding: 6px 5px 0 5px;
+    color: var(--default-color-light);
+    background-color: var(--default-color-dark);
+    font-family: Poppins;
+    font-weight: 800;
 }
+
 
 .close-player-button {
     position: absolute; 
@@ -183,13 +170,18 @@ p {
     padding: 5px;
     margin: 5px 1px 1px 1px;
     background-color: rgba(212, 210, 210, 0.5);
-    color: rgb(58, 58, 58);
+    color: var(--default-color-dark);
     font-family: Poppins;
     font-weight: 400;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: left;
+}
+
+.dark-color-mode .series-option {
+    background-color: var(--default-color-dark);
+    color: rgba(212, 210, 210, 0.5);
 }
 
 .series-option:first-child {
@@ -218,7 +210,6 @@ p {
     overflow-y: scroll;
     overflow-x: hidden;
     padding: 15px;
-    margin: 30px;
     border-radius: 40px;
     background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(20px);
@@ -226,6 +217,11 @@ p {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.077);
     animation: fadeIn 0.5s ease 0s 1 normal forwards;
     z-index: 999; 
+}
+
+.dark-color-mode .player-panel {
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.05));
+    box-shadow: 0 8px 32px rgb(58, 58, 58, 0.77);
 }
 
 @keyframes fadeIn {
@@ -248,7 +244,7 @@ p {
 .movie-title {
     font-size: 2rem;
     font-weight: 600;
-    color: rgb(212, 210, 210);
+    color: var(--default-color-light);
     text-shadow: 0px 0px 3px white;
     text-align: center;
 }
@@ -260,13 +256,15 @@ p {
     text-align: left;
 }
 
+.dark-color-mode .movie-description {
+    color: var(--default-color-light);
+}
 
 .site-container{
     min-width: 460px;
     overflow-y: scroll;
     overflow-x: hidden;
     padding: 15px;
-    margin: 30px;
     border-radius: 40px;
     background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(20px);
@@ -291,6 +289,28 @@ p {
 }
 
 
+.color-mode-toggler {
+    width: 22px;
+    height: 20px;
+    border: 1px solid var(--default-color-light);
+    border-radius: 100%;
+    overflow: hidden;
+    display: flex;
+}
+
+.color-mode-set-default {
+    width: 50%;
+    height: 100%;
+    background-color: var(--default-color-light);
+}
+
+.color-mode-set-dark {
+    width: 50%;
+    height: 100%;
+    background-color: var(--default-color-dark);
+}
+
+
 .searchbar-container {
     border-radius: 1em;
     display: flex;
@@ -311,16 +331,21 @@ p {
 }
 
 input.filter-input {
-    border: 1px solid rgb(212, 210, 210);;
-    background-color: transparent;
-    color: rgb(58, 58, 58);
-    border-radius: 1em;
     height: 2em;
+    padding: 0 10px;
+    border: 1px solid var(--default-color-light);
+    border-radius: 1em;
+    background-color: transparent;
+    color: var(--default-color-dark);
+}
+
+.dark-color-mode .filter-input {
+    color: var(--default-color-light);
 }
 
 input.filter-input:focus {
-    background-color: rgb(212, 210, 210);
-    color: rgb(58, 58, 58);
+    background-color: var(--default-color-light);
+    color: var(--default-color-dark);
 }
 
 
@@ -388,12 +413,6 @@ input.filter-input:focus {
 }
 
 
-div.fullsize-panel {
-    height: 100%; 
-    width: 100%;
-}
-
-
 .media-container {
     display: flex; 
     flex-direction: row;
@@ -404,7 +423,7 @@ div.fullsize-panel {
     position: relative;
     width: 200px;
     height: 320px;
-    background-color: white;
+    background-color: var(--default-color-light);
     transition: all 0.25s;  
     border-radius: 10px;
     text-decoration: none;
@@ -414,6 +433,25 @@ div.fullsize-panel {
     transition: all 0.25s;
 }
 
+.dark-color-mode .media-item {
+    background-color: var(--default-color-dark);    
+}
+
+.media-item > p {
+    position: absolute;
+    width: 100%;
+    color: var(--default-color-dark);
+    text-align: center;
+    margin: 0px;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    font-family: poppins;
+}
+
+.dark-color-mode .media-item > p {
+    color: var(--default-color-light);
+}
 
 .listitem-thumbnail-panel {
     height: 250px; 
@@ -427,19 +465,6 @@ div.fullsize-panel {
     position: absolute;
     top: 0px;
     left: 0px;
-}
-
-
-.media-item > p {
-    position: absolute;
-    width: 100%;
-    color: rgb(58, 58, 58);
-    text-align: center;
-    margin: 0px;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    font-family: poppins;
 }
 
 .listitem-title-panel {

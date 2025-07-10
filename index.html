@@ -24,17 +24,17 @@
 
 
 
-    <body class="disable-scrollbars">
+    <body id="bodyElement" class="disable-scrollbars">
 
         <div id="rootPanel" class="default-color-mode">
 
-            <div class="grouping-panel fullsize-panel">
+            <div class="stylable-root-panel">
 
                 <div id="playerBg" class="player-panel-hidden">
 
                     <div class="fullsize-panel">
                         <div id="closePlayerBtn" 
-                            class="close-player-button flex-color clickable clickable-text-div" 
+                            class="clickable clickable-text-div close-player-button" 
                             onclick="hidePlayer();">
                             <span>x</span>
                         </div>
@@ -64,21 +64,18 @@
 
                     <!-- top bar -->
                     <div id="topBar" class="top-bar">
-                        <p class="clickable default-margin top-bar-title" onclick="location.reload();">Streamed</p>
-                        
+                        <p class="clickable clickable-text default-margin top-bar-title" onclick="location.reload();">Streamed</p>
+
                         <div id="searchbarContainer" class="default-margin searchbar-container">
                             <!-- type filters -->
                             <div id="filterByTypeMovieBtn" 
-                                class="flex-color clickable clickable-text filter-by-type movies-filter" 
-                                style="text-decoration: none;"
+                                class="clickable clickable-text filter-by-type movies-filter" 
                                 onclick="onTypeFilterToggled(FILTER_MOVIES, this);">Movies</div>
                             <div id="filterByTypeSeriesBtn" 
-                                class="flex-color clickable clickable-text filter-by-type series-filter"
-                                style="text-decoration: none;"
+                                class="clickable clickable-text filter-by-type series-filter"
                                 onclick="onTypeFilterToggled(FILTER_SERIES, this);">Series</div>
                             <div id="filterByTypeAudioBtn"
-                                class="flex-color clickable clickable-text filter-by-type audios-filter"
-                                style="text-decoration: none;"
+                                class="clickable clickable-text filter-by-type audios-filter"
                                 onclick="onTypeFilterToggled(FILTER_AUDIOS, this);">Audios</div>
                             <!-- text filter -->
                             <div id="filterInputContainer" class="filter-input-container"> 
@@ -90,8 +87,14 @@
                             </div>
                         </div>
 
+                        
+                        <div class="clickable default-margin color-mode-toggler" onclick="toggleColorMode();">
+                            <div class="color-mode-set-default"></div>
+                            <div class="color-mode-set-dark"></div>
+                        </div>
+
                         <!--
-                        <div id="profile-wrapper" class="flex-color clickable" onclick="location.reload();">
+                        <div id="profile-wrapper" class="clickable" onclick="location.reload();">
                             <img src="src/home.png" height="30">
                         </div>
                         -->
@@ -103,7 +106,7 @@
                     <div id="topPick" class="top-pick-container">
                         
                         <!--pick1-->
-                        <div id="topPick1" class="flex-color clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
+                        <div id="topPick1" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
                             <div id="topPickFade1" class="top-pick-fade"></div>
 
                             <div class="top-pick-title-container">
@@ -116,7 +119,7 @@
                         </div>
                         
                         <!--pick2-->
-                        <div id="topPick2" class="flex-color clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
+                        <div id="topPick2" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
                             <div id="topPickFade2" class="top-pick-fade"></div>
 
                             <div class="top-pick-title-container">
@@ -152,6 +155,8 @@
         let searchText = "";
         
         // some HTML elements:
+        const bodyElement = document.getElementById("bodyElement");
+        const rootPanel = document.getElementById("rootPanel")
         const siteContainer = document.getElementById("siteContainer");
         const playerBg = document.getElementById("playerBg");
         const player = document.getElementById("videoElement");
@@ -183,6 +188,17 @@
         */
 
         // other cars <<<<<<< dodge charger
+
+
+        let toggleColorMode = function() {
+            if (rootPanel.getAttribute("class") === "dark-color-mode") {
+                rootPanel.setAttribute("class", "default-color-mode");
+                bodyElement.style.background = "content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189))";
+            } else {
+                rootPanel.setAttribute("class", "dark-color-mode");
+                bodyElement.style.background = "content-box radial-gradient(rgb(62, 67, 70), rgb(14, 47, 59))";
+            }
+        }
 
         
         let initTopPick = function(movieObj, topPickNum) {
@@ -483,7 +499,6 @@
 
         ///////////////////////////////////////////////////
         // start rendering UI:
-//        loaded();
         addEventListener("load", () => loaded());
 
     </script>
