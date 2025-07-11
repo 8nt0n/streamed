@@ -41,14 +41,15 @@ def printHelp():
 
         + "This script adds new episodes of a series to the media repository.\n\n"
         + f"Arguments:\n"
-        + f"{ARG_SRC_FOLDER}           path to the folder containing the video files (mandatory when adding multiple movie files to the media repository)\n"
+        + f"{ARG_SRC_FOLDER}           path to the folder containing the video files of the season to register (mandatory)\n"
         + f"{ARG_SERIES_TARGET_FOLDER}           name of the target folder in the media repository hosting this series\n"
+        + f"{ARG_SEASON_NUMBER}           number of the season to register, defaults to 1 (overwrites existing videos)\n"
         + f"{ARG_MEDIA_DIR}           path to the target media repository containing your streamable movies, defaults to {cmn.MEDIA_DIR_PATH}\n"
         + f"{ARG_SERIES_TITLE}           the series' title when adding a season of a new series to the media repository (will be extracted from the series' target folder if not present)\n"
         + f"{ARG_SERIES_DESCR}           the movie's description when adding a single movie file to the media repository (defaults to the series' title)\n"
         + f"{ARG_INCL_GLOB}           include only video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
-        + f"{ARG_SYMLINK}           create symlink(s) to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
+        + f"{ARG_SYMLINK}           create symlinks to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
         + f"{cmn.ARG_VERBOSE}           enables a more verbose logging\n"
         + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit\n"
     )
@@ -131,6 +132,7 @@ def main():
         
         cmn.log(f"[INFO] source root folder: {srcDir}")
         cmn.log(f"[INFO] series target folder: {seriesTargetDir}")
+        cmn.log(f"[INFO] season number: {seasonNum}")
         cmn.log(f"[INFO] include GLOB: {inclGlob}")
         cmn.log(f"[INFO] exclude GLOB: {exclGlob}")
         cmn.log(f"[INFO] series title: {seriesTitle}")
