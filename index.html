@@ -5,141 +5,179 @@
         
         <meta charset="utf-8">
         
+        <!-- streamed style -->
         <link rel="stylesheet" href="style.css">
-        <!--Font-->
+
+        <!--font-->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
 
-        <!--icon-->
+        <!-- icon -->
         <link rel="icon" type="image/png" href="src/logo.png">
+
+        <!-- model -->
         <script src="data.js"></script>
     </head>
 
-    <body class="disable-scrollbars">
 
-        <div id="playerBg" class="playerhidden">
-            <div style="position: absolute; top: 12px; left: calc(100% - 45px);">
-                <button onclick="hide_player();" class="Close-button">
-                    <img src="src/close.PNG" alt="close" style="width: 100%;">
-                </button>
 
-            </div>
+    <body id="bodyElement" class="disable-scrollbars">
 
-            <div id="video" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: top; flex-direction: column;">
-                <video width="90%" height="60%"  controls id="player" style="border-radius: 15px; background-color: black; margin-top: 60px;"></video>
-                <div id="SeasonBorder" style="margin-top: 60px; height: 70%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;">
-                    <div id="SeasonContainer" style="height: 300%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: 600px 600px 600px 600px 600px 600px 600px 600px 600px; padding: 2%;"></div>
-                </div>
-                <p style="font-weight: 800; text-shadow: 0px 0px 3px white; font-size: 2rem;" id="movieTitle"></p>
-            </div>
-            <div id="descriptionDiv" style="width: 100%; height: 80%; display: flex; align-items: top; justify-content: top; margin: 10% 0%; margin-top: 15%;" >
-                <p id="description" style="font-weight: 200; font-size: 1.2rem; color: rgb(58, 58, 58); text-align: left; margin: 5%; margin-bottom: 100px;"></p>
-            </div>
-            
-        </div>
+        <div id="rootPanel" class="default-color-mode">
 
-        <div class="site-container" id="site-container">
+            <div class="stylable-root-panel">
 
-            <!--top bar stuff-->
-            <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: space-between;">
-                <p style="font-family: Poppins; font-size: 2rem; margin: 0px; margin-left: 40px; cursor: pointer;" onclick="location.reload();">Streamed</p>
-                
-                <div id="searchbar-wrapper">
-                    <button style="top: 9px; left: 10px;" class="searchbar_button" id="searchbar_button_movies" onclick="filterType('Movies')">Movies</button>
-                    <button style="top: 9px; left: 75px;" class="searchbar_button" id="searchbar_button_series" onclick="filterType('Series')">Series</button>
-                    <button style="top: 9px; left: 130px;" class="searchbar_button" id="searchbar_button_audios" onclick="filterType('Audios')">Audios</button>
-                    
-                    <button style="background-color: #1B2733; border: 0px; width: 32px; height: 32px; border-radius: 20px; display: flex; align-items: center; justify-content: center; right: 4px; top: 4px; margin: 0px; position: absolute; cursor: pointer;" onclick="searchiconclicked()">
-                        <img src="src/search.svg" style="height: 30px; width: 30px;">
-                    </button>
+                <div id="playerBg" class="player-panel-hidden">
 
-                    <!-- filter -->
-                    <div id="filterDiv" style="height: 100%; width: 190px;"> 
-                        <input id="filterInput" placeholder="Search" type="text" onkeyup="filter(this.value);">
+                    <div class="fullsize-panel">
+                        <div id="closePlayerBtn" 
+                            class="clickable clickable-text-div close-player-button" 
+                            onclick="hidePlayer();">
+                            <span>x</span>
+                        </div>
+                                                
+                        <div class="default-margin">
+                            <div id="movieTitle" class="movie-title"></div>
+                        </div>
+
+                        <div class="video-details-container">
+
+                            <div class="default-margin video-detail video-player-container">
+                                <video id="videoElement" class="video-player" controls></video>
+                            </div>
+
+                            <div id="seasonContainer" class="default-margin video-detail season-container"></div>
+
+                            <div id="descriptionDiv" class="default-margin video-detail">
+                                <div id="movieDescription" class="movie-description"></div>
+                            </div>
+
+                        </div>
                     </div>
+
                 </div>
 
-                <div id="profile-wrapper" onclick="location.reload();">
-                    <img src="src/home.png" style="height: 30px; cursor: pointer;">
+                <div id="siteContainer" class="site-container">
+
+                    <!-- top bar -->
+                    <div id="topBar" class="top-bar">
+                        <p class="clickable clickable-text default-margin top-bar-title" onclick="location.reload();">Streamed</p>
+
+                        <div id="searchbarContainer" class="default-margin searchbar-container">
+                            <!-- type filters -->
+                            <div id="filterByTypeMovieBtn" 
+                                class="clickable clickable-text filter-by-type movies-filter" 
+                                onclick="onTypeFilterToggled(FILTER_MOVIES, this);">Movies</div>
+                            <div id="filterByTypeSeriesBtn" 
+                                class="clickable clickable-text filter-by-type series-filter"
+                                onclick="onTypeFilterToggled(FILTER_SERIES, this);">Series</div>
+                            <div id="filterByTypeAudioBtn"
+                                class="clickable clickable-text filter-by-type audios-filter"
+                                onclick="onTypeFilterToggled(FILTER_AUDIOS, this);">Audios</div>
+                            <!-- text filter -->
+                            <div id="filterInputContainer" class="filter-input-container"> 
+                                <input id="filterInput"
+                                    class="filter-input"
+                                    type="text" 
+                                    placeholder="Search by title" 
+                                    onkeyup="onFilterByTextMatch(this.value);">
+                            </div>
+                        </div>
+
+                        
+                        <div class="clickable default-margin color-mode-toggler" onclick="toggleColorMode();">
+                            <div class="color-mode-set-default"></div>
+                            <div class="color-mode-set-dark"></div>
+                        </div>
+
+                        <!--
+                        <div id="profile-wrapper" class="clickable" onclick="location.reload();">
+                            <img src="src/home.png" height="30">
+                        </div>
+                        -->
+                    </div>
+
+
+
+                    <!-- Top pick -->
+                    <div id="topPick" class="top-pick-container">
+                        
+                        <!--pick1-->
+                        <div id="topPick1" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
+                            <div id="topPickFade1" class="top-pick-fade"></div>
+
+                            <div class="top-pick-title-container">
+                                <p id="topPickTitle1" class="top-pick-title"></p>
+                            </div>
+
+                            <div class="top-pick-play">
+                                <img id="topPickPlayMovie1" src="src/Play_Movie.svg">
+                            </div>
+                        </div>
+                        
+                        <!--pick2-->
+                        <div id="topPick2" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
+                            <div id="topPickFade2" class="top-pick-fade"></div>
+
+                            <div class="top-pick-title-container">
+                                <p id="topPickTitle2" class="top-pick-title"></p>
+                            </div>
+
+                            <div class="top-pick-play">
+                                <img id="topPickPlayMovie2" src="src/Play_Movie.svg">
+                            </div>
+                        </div>
+                    </div>
+        
+
+                    <!-- Main panel for media listing -->
+                    <div id="mediaContainer" class="media-container"></div>
+
                 </div>
+
             </div>
-
-
-
-            <!--Top pick-->
-            <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center;" id="topPick">
-                
-                <!--pick1-->
-                <div id="topPick1" class="toppick" onclick="spawnPlayer(randomMovie)">
-                    <p class="TopPickTitle" id="TopPickTitle1">Disnep - Kang Satay</p>
-
-                    <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie" id="Top_Pick_Play_Movie1">
-                    
-                </div>
-                
-                
-                <!--pick2-->
-                <div id="topPick2" class="toppick" onclick="spawnPlayer(randomMovie2)">
-                    <p class="TopPickTitle" id="TopPickTitle2">Disnep - Gaja Langka</p>
-
-                    <img src="src/Play_Movie.svg" class="Top_Pick_Play_Movie" id="Top_Pick_Play_Movie2">
-                    
-                </div>
-            </div>
-            
-
-            <!--top bar stuff-->
-            <div style="height: 100%; width: 100%;">
-                <p></p>
-            </div>
-
-
-            
-            <div id="rootContainer" class="main">
-                
-                
-            </div>
-            
 
         </div>
 
     </body>
 
+
     <script>
-        let search_bar_mode = 0; //Search bar is showing "Movies | Series | Audios"
-        let playerBg = document.getElementById('playerBg');
-        let player = document.getElementById('player');
-        let playerTitle = document.getElementById('movieTitle');
-        let playerDescription = document.getElementById('description');
-        let videoContainer = document.getElementById('video');
-        let seasonContainer = document.getElementById('SeasonContainer');
-        let topPick = document.getElementById('topPick')
-        let SearchbarElem = document.getElementById("filterInput")
-        let SearchbarElem2 = document.getElementById("filterDiv")
-        SearchbarElem.style.display = "none"
-
-
-        let randomMovie
-        let randomMovie2
-        if (Movies.length > 1) {
-            do {
-                randomMovie = Movies[Math.floor(Math.random() * Movies.length)];
-                randomMovie2 = Movies[Math.floor(Math.random() * Movies.length)];
-            } while (randomMovie === randomMovie2);
-        } else {
-            randomMovie = Movies[0];
-            randomMovie2 = Movies[0];
-        }
+        // filtering:
+        const FILTER_NONE = 0;
+        const FILTER_MOVIES = 1;
+        const FILTER_SERIES = 2;
+        const FILTER_AUDIOS = 4;
+        let typeFilterBits = FILTER_NONE;
+        let searchText = "";
         
+        // some HTML elements:
+        const bodyElement = document.getElementById("bodyElement");
+        const rootPanel = document.getElementById("rootPanel")
+        const siteContainer = document.getElementById("siteContainer");
+        const playerBg = document.getElementById("playerBg");
+        const player = document.getElementById("videoElement");
+        const playerTitle = document.getElementById("movieTitle");
+        const playerDescription = document.getElementById("movieDescription");
+        const seasonContainer = document.getElementById("seasonContainer");
+
+        const topPick = document.getElementById("topPick");
+        const filterInputContainer = document.getElementById("filterInputContainer");
+        const filterInputElem = document.getElementById("filterInput");
+     
+        // randomly selected movies for the 'top pick':
+        let randomMovie;
+        let randomMovie2;
+
         
         /*
                  _______________
               //~~~~~~~~~~~~~~~\\  |
-           0  / /_________________\ \| 0
-            ---------------------------
+         0  / /_________________\ \| 0
+          ---------------------------
         / /======|=D=O=D=G=E=|======\ \
         \_____________________________/
         \    _______       _______    /
@@ -152,7 +190,267 @@
         // other cars <<<<<<< dodge charger
 
 
-        function isColorCloseToWhite(hex) {
+        let toggleColorMode = function() {
+            if (rootPanel.getAttribute("class") === "dark-color-mode") {
+                rootPanel.setAttribute("class", "default-color-mode");
+                bodyElement.style.background = "content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189))";
+            } else {
+                rootPanel.setAttribute("class", "dark-color-mode");
+                bodyElement.style.background = "content-box radial-gradient(rgb(62, 67, 70), rgb(14, 47, 59))";
+            }
+        }
+
+        
+        let initTopPick = function(movieObj, topPickNum) {
+            console.log(`initializing top pick ${topPickNum}: '${movieObj.title}'...`);
+
+            let topPickElem = document.getElementById("topPick" + topPickNum);
+            topPickElem.style = `background-image: url('media/${movieObj.type}/${movieObj.path}/meta/${movieObj.thumbnailFile}'); background-color: ${movieObj.thumbColor};`;
+
+            let topPickTitle = document.getElementById("topPickTitle" + topPickNum);
+            topPickTitle.innerText = movieObj.title
+            if (isColorCloseToWhite(movieObj.thumbColor)) {
+                topPickTitle.style.color = "black";
+                document.getElementById("topPickPlayMovie" + topPickNum).src = "src/Play_Movie_dark.svg";
+            } else {
+                topPickTitle.style.color = "white";
+            }
+
+            let topPickFade = document.getElementById("topPickFade" + topPickNum);
+            topPickFade.style = `background: linear-gradient(to right, ${movieObj.thumbColor} 0%, ${movieObj.thumbColor} 55%, #ffffff00 100%);`;
+        }
+          
+
+        let chooseTopPick = function(Movies) {
+            // Top Picks
+            initTopPick(randomMovie, 1);
+            initTopPick(randomMovie2, 2);
+        }
+
+
+        let spawnPlayer = function(summary) {
+            siteContainer.style.display = "none"
+            playerBg.setAttribute('class', 'player-panel');
+
+            playerTitle.innerHTML = summary.title;
+            playerDescription.innerHTML = summary.description;
+            
+            if (summary.type == "movies") {
+                seasonContainer.style.display = "none"
+                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;
+            } else if (summary.type == "series") {
+                seasonContainer.style.display = "flex"
+
+                // single selection element containing all of the episodes of all of the seasons:
+                let episodesContainer = document.createElement("div");
+                episodesContainer.setAttribute("class", "episodes-container");
+
+                for (let i = 0; i < summary.seasons; i++) {
+                    let seasonOption = document.createElement("div");
+                    seasonOption.setAttribute("class", "series-option");
+                    let cover = document.createElement("img");
+                    let seasonNum = i + 1;
+                    cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
+                    cover.setAttribute("id", seasonNum)
+                    cover.setAttribute("alt", "Staffel " + (seasonNum));
+                    cover.setAttribute("class", "season-thumbnail");
+                    seasonOption.appendChild(cover);
+
+                    let seasonNumText = document.createElement("div");
+                    seasonNumText.setAttribute("class", "season-number-panel");
+                    seasonNumText.innerText = `Season ${seasonNum}`;
+                    seasonOption.appendChild(seasonNumText);
+
+                    episodesContainer.appendChild(seasonOption);
+
+                    for (let episodeNum = 0; episodeNum < summary.seasonEp[i]; episodeNum++) {
+                        let episodeOption = document.createElement("div");
+                        episodeOption.setAttribute("class", "clickable series-option episode-option");
+                        episodeOption.innerText = `Episode ${episodeNum + 1}`;
+                        episodeOption.addEventListener(
+                            "click", 
+                            () => prepareEpisode(summary, seasonNum, episodeNum + 1)
+                        );
+                        episodesContainer.appendChild(episodeOption);
+                    }
+                }                
+                seasonContainer.appendChild(episodesContainer);
+
+                prepareEpisode(summary, 1, 1);
+            }
+        }
+
+        let prepareEpisode = function(seriesSummary, seasonNum, episodeNum) {
+            preparePlayer(`media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}`);
+            playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+        }
+
+        let preparePlayer = function(playerSrc) {
+            console.log(playerSrc);
+            player.src = playerSrc + ".mp4"; // TODO: get the filename from the model
+            player.onerror = function() {
+                player.src = playerSrc + ".mkv";
+            };
+        }
+
+        let hidePlayer = function() {
+            siteContainer.style.display = "grid"
+            player.pause()
+            playerBg.setAttribute("class", "player-panel-hidden");
+            player.style.display = "inline-block";
+            seasonContainer.innerHTML = "";
+        }        
+          
+
+        let createDiv = function(summary) {
+            // parent div            
+            let mediaListElem = document.createElement("div");
+            mediaListElem.setAttribute('class', `clickable clickable-movie default-margin media-item ${summary.type} ${summary.path}`); // note: 'type' and 'path' is used for filtering
+            mediaListElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);
+
+            // thumbnail div
+            const thumbnailPath = "media/" + summary.type + "/" + summary.path + "/meta/" + summary.thumbnailFile;
+            let mediaThumbnailElem = document.createElement("div");
+            mediaThumbnailElem.setAttribute("class", "listitem-thumbnail-panel");
+            mediaThumbnailElem.setAttribute("style", `background-image: url('${thumbnailPath}');`);
+            mediaListElem.appendChild(mediaThumbnailElem);
+
+            // title paragraph
+            let mediaTitleElem = document.createElement("p");
+            mediaTitleElem.setAttribute("class", "listitem-title-panel");
+            mediaTitleElem.innerText = summary.title;
+            mediaListElem.appendChild(mediaTitleElem);
+
+
+            // details
+            let mediaDetailsElem = document.createElement("p");
+            mediaDetailsElem.setAttribute("class", "listitem-details-panel");
+            if (summary.type === "series") {
+                // number of seasons and total episodes count
+                mediaDetailsElem.innerText = `${summary.seasons} Season${(summary.seasons === "1" ? "" : "s")} | ${summary.episodes} Episodes`;
+            } else if (summary.type === "movies") {
+                // movie length and resolution
+                mediaDetailsElem.innerText = `${summary.resolution} | ${summary.length}`;
+
+                // resolution icon
+                let videoResolution = getVideoResolution(summary.resolution);
+                console.log(`${summary.resolution} >>> ${videoResolution}`);
+
+                if (videoResolution !== "Unknown Resolution") {
+                    let resolutionIconElem = document.createElement("img");
+                    resolutionIconElem.src = `src/${videoResolution}.png`;
+                    resolutionIconElem.setAttribute("class", "listitem-resolution-icon");
+                    mediaThumbnailElem.appendChild(resolutionIconElem);
+                }
+            }
+            mediaListElem.appendChild(mediaDetailsElem);
+
+            document.getElementById('mediaContainer').appendChild(mediaListElem);
+        }
+
+
+        let loaded = function() {
+            console.log('loaded');
+
+            for (let i = 0; i < Movies.length; i++) {
+                createDiv(Movies[i]);
+            }
+
+            for (let i = 0; i < Series.length; i++){
+                createDiv(Series[i]);
+            }
+
+            if (Movies.length > 1) {
+                do {
+                    randomMovie = Movies[Math.floor(Math.random() * Movies.length)];
+                    randomMovie2 = Movies[Math.floor(Math.random() * Movies.length)];
+                } while (randomMovie === randomMovie2);
+            } else {
+                randomMovie = Movies[0];
+                randomMovie2 = Movies[0];
+            }
+            chooseTopPick(Movies)
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' || event.key === 'Esc') {
+                    hidePlayer()
+                }
+            });
+        }
+        
+
+        
+        let onTypeFilterToggled = function(type, srcElem) {
+            // toogle filter type activity
+            typeFilterBits ^= type;
+            srcElem.style.textDecoration = (typeFilterBits & type) === type ? "underline" : "none";
+
+            //console.log(`type=${type}; typeFilterBits=${typeFilterBits}; typeFilterBits & type=${typeFilterBits & type}`);
+
+            filterMedia();
+        }
+
+        let onFilterByTextMatch = function(value) {
+            console.log(`filtering by text value '${value}'...`);
+            searchText = value;
+
+            filterMedia();
+        }
+
+        let filterMedia = function() {
+            resetFilter();
+
+            if (typeFilterBits !== FILTER_NONE) {
+                let hideBits = ~typeFilterBits;
+
+                //console.log(`typeFilterBits=${dec2bin(typeFilterBits).toString(2)}\n      hideBits=${dec2bin(hideBits).toString(2)}`);
+
+                if ((hideBits & FILTER_MOVIES) === FILTER_MOVIES) {
+                    for (let movie of document.querySelectorAll(".movies")) {
+                        movie.style.display = "none";
+                    }
+                }
+                if ((hideBits & FILTER_SERIES) === FILTER_SERIES) {
+                    for (let series of document.querySelectorAll(".series")) {
+                        series.style.display = "none";
+                    }
+                }
+                if ((hideBits & FILTER_AUDIOS) === FILTER_AUDIOS) {
+                    for (let audio of document.querySelectorAll(".audios")) {
+                        audio.style.display = "none";
+                    }
+                }
+            }
+
+            if (searchText.length === 0) {
+                return;
+            }
+
+            const lowValue = searchText.toLowerCase();
+            filterTitles(Movies, lowValue);
+            filterTitles(Series, lowValue);
+            //filterTitles(Audios, lowValue); // TODO: add empty 'Audios' array when creating/refreshing the model
+        }
+
+        let filterTitles = function(mediaList, lowerSearchText) {
+            let mediaItems = mediaList || [];
+            for (let mediaItem of mediaItems) {
+                if (mediaItem.title.toLowerCase().indexOf(lowerSearchText) === -1) {
+                    document.querySelector("." + mediaItem.path).style.display = "none";
+                }
+            }
+        }
+        
+        let resetFilter = function() {
+            for (let mediaItem of document.querySelectorAll(".media-item")) {
+                mediaItem.style.display = "block";
+            }
+        }
+
+
+        ///////////////////////////////////////////////////
+        // utils:
+        let isColorCloseToWhite = function (hex) {
             hex = hex.replace(/^#/, "");
             if (hex.length === 3) {
               hex = hex.split("").map(c => c + c).join("");
@@ -165,206 +463,9 @@
           
             const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
             return brightness > 220;
-          }
-          
+        }      
 
-        let chooseTopPick = function(Movies) {
-
-            // 1. Top Pick
-            let TopPick = document.getElementById("topPick1")
-
-            
-
-            console.log(randomMovie)
-
-            // TODO: actually do stuff with that movie
-
-            TopPick.style = `background-image: url('media/${randomMovie.type}/${randomMovie.path}/meta/${randomMovie.thumbnailFile}'); background-color: ${randomMovie.thumbColor};`
-
-            let TopPickTitle = document.getElementById("TopPickTitle1")
-
-            if (isColorCloseToWhite(randomMovie.thumbColor)) {
-                TopPickTitle.style.color = "black"
-                document.getElementById("Top_Pick_Play_Movie1").src = "src/Play_Movie_dark.svg"
-            }
-            else {
-                TopPickTitle.style.color = "white"
-            }
-
-            TopPickTitle.innerHTML = randomMovie.title
-
-            let TopPickFade = document.createElement("div")
-            TopPickFade.style = `width: 100%; height: 100%; background: linear-gradient(to right, ${randomMovie.thumbColor} 0%, ${randomMovie.thumbColor} 55%, #ffffff00 100%);`
-
-            TopPick.appendChild(TopPickFade)
-
-            // 2. Top Pick
-            TopPick = document.getElementById("topPick2")
-
-            
-
-            console.log(randomMovie2)
-
-            // TODO: actually do stuff with that movie
-
-            TopPick.style = `background-image: url('media/${randomMovie2.type}/${randomMovie2.path}/meta/${randomMovie2.thumbnailFile}'); background-color: ${randomMovie2.thumbColor};`
-
-            TopPickTitle = document.getElementById("TopPickTitle2")
-
-
-            if (isColorCloseToWhite(randomMovie2.thumbColor)) {
-                TopPickTitle.style.color = "black"
-                document.getElementById("Top_Pick_Play_Movie2").src = "src/Play_Movie_dark.svg"
-            }
-            else {
-                TopPickTitle.style.color = "white"
-            }
-            TopPickTitle.innerHTML = randomMovie2.title
-
-            TopPickFade = document.createElement("div")
-            TopPickFade.style = `width: 100%; height: 100%; background: linear-gradient(to right, ${randomMovie2.thumbColor} 0%, ${randomMovie2.thumbColor} 55%, #ffffff00 100%);`
-
-            TopPick.appendChild(TopPickFade)
-            
-        };
-
-        let searchiconclicked = function() {
-            if (search_bar_mode == 0) {
-                //extract searchbar
-
-
-                // hide all buttons
-                const elements = document.querySelectorAll('.searchbar_button');
-                elements.forEach(function(element) {
-                    element.style.display = 'none';
-                });
-
-                //show searchbar
-                SearchbarElem.style.display = "block"
-                SearchbarElem2.style.display = "block"
-
-                search_bar_mode = 1
-            }
-            else if (search_bar_mode == 1) {
-                //contract searchbar
-
-                // show all buttons
-                const elements = document.querySelectorAll('.searchbar_button');
-                elements.forEach(function(element) {
-                    element.style.display = 'block';
-                });
-
-                //hide searchbar
-                SearchbarElem.style.display = "none"
-                SearchbarElem2.style.display = "none"
-
-                search_bar_mode = 0
-            }
-        }
-
-        SearchbarElem.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                search_bar_mode = 1
-                searchiconclicked()
-            }
-        });
-
-        let spawnEpisodes = function(summary, seasonNum) {
-            let maxEpisodeIdx = summary.seasonEp[seasonNum - 1]
-            
-            seasonContainer.innerHTML = ""
-            // seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr; padding: 2%;"
-            seasonContainer.style = "height: 92%; width: 95%; display: grid; grid-gap: 6px; grid-template-rows: 9fr 1fr; padding: 12px;"
-            document.getElementById('SeasonBorder').style = "margin-top: 60px; height: 70%; width: 90%; border-radius: 5px; border: 1px solid rgba( 255, 255, 255, 0.18 ); overflow: auto; max-height: 800px;"
-
-            let episodePlayer = document.createElement("video");
-            episodePlayer.setAttribute("controls", "");                
-            episodePlayer.style = "width: 90%; margin-top: 5%; border-radius: 6;"
-
-            seasonContainer.appendChild(episodePlayer);
-
-            let episodeSelect = document.createElement("select");
-            seasonContainer.appendChild(episodeSelect);
-
-            let optGroup = document.createElement("optgroup");
-            optGroup.label = "Staffel " + seasonNum;
-            episodeSelect.appendChild(optGroup);
-
-            for (let i = 0; i < maxEpisodeIdx; i++) {
-
-                // let playerContainer = document.createElement("div")
-                // playerContainer.style = "width: 100%; height: 300px; border: 1px solid rgba( 255, 255, 255, 0.18 ); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(16px) saturate(180%); webkt-backdrop-filter: blur(16px) saturate(180%); background-color: rgba(17, 25, 40, 0.75); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.125)"
-
-                // let episodeInfo = document.createElement("p")
-                // let EpisodeNumber = i + 1 
-                // episodeInfo.innerHTML = "Staffel " + episodesCount + " | Episode " + EpisodeNumber
-                // episodeInfo.style = "font-weight: 200; font-size: 1.2rem; color: rgba(110, 110, 110, 1); text-align: left;"
-
-                // seasonContainer.appendChild(playerContainer);
-                // playerContainer.appendChild(episodeInfo);
-
-                let episodeOption = document.createElement("option");
-                episodeOption.value = `media/${summary.type}/${summary.path}/${seasonNum}/${i+1}`;
-                episodeOption.innerText = "Episode " + (i + 1);
-                optGroup.appendChild(episodeOption);
-            }
-
-            episodeSelect.addEventListener("change", (evt) => {
-                console.dir(evt);
-
-                let episodePath = evt.srcElement.selectedOptions[0].value;      
-                console.log(episodePath);
-
-                episodePlayer.src = episodePath + ".mp4"; // TODO: get the filename from the model
-                episodePlayer.onerror = function() {
-                    episodePlayer.src = episodePath + ".mkv";
-                };
-            });
-
-            episodeSelect.selectedIndex = 0;
-            episodeSelect.dispatchEvent(new Event('change', { 'view': window, 'bubbles': true }));
-        }
-
-
-
-        let spawnPlayer = function(summary) {
-            hide_player()
-            document.getElementById("site-container").style.display = "none"
-            playerBg.setAttribute('class', 'player');
-            console.log(summary.type)
-            if (summary.type == "movies"){
-                seasonContainer.style.display = "none"
-                document.getElementById('SeasonBorder').style.display = "none"
-
-                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;                
-            } else if (summary.type == "series") {
-                seasonContainer.style = "height: 150%; width: 95%; display: grid; grid-gap: 1%; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 2%;"
-                seasonContainer.style.display = "block"
-                document.getElementById('SeasonBorder').style.display = "block"
-                player.style.display = "none"
-
-                for(let i=0; i < summary.seasons; i++){
-                    let cover = document.createElement("img");
-                    const seasonNum = i + 1;
-                    cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
-                    cover.setAttribute("id", seasonNum)
-                    cover.setAttribute("alt", "Staffel " + (seasonNum));
-                    cover.setAttribute("class", "SeasonCover");
-                    cover.setAttribute("onclick", `spawnEpisodes(${JSON.stringify(summary)}, ${seasonNum})`);
-                    seasonContainer.appendChild(cover);
-                }
-                
-            }
-
-            playerTitle.innerHTML = summary.title;
-            videoContainer.appendChild(playerTitle);
-            
-            playerDescription.innerHTML = summary.description;
-            document.getElementById("descriptionDiv").appendChild(playerDescription);
-        }
-
-        // Thanks chat gpt duh?
-        function getVideoResolution(resolutionString) {
+        let getVideoResolution = function(resolutionString) {
             if (resolutionString == "[n/a]") {
                 return 'Unknown Resolution';
             }
@@ -389,181 +490,16 @@
             if (h < 700) return 'Unknown Resolution';
           
             return 'Unknown Resolution';
-        }          
-          
+        } 
 
-        let createDiv = function(summary) {
-
-            const thumbnailPath = "media/" + summary.type + "/" + summary.path + "/meta/" + summary.thumbnailFile
-            
-            //spawn parent div            
-            let summElem = document.createElement("div");
-            summElem.setAttribute('class', 'card media-item ' + summary.path);
-            summElem.style = "position: relative;"
-            summElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);
-
-            //spawn the img div (why is this a div and not a image bruh )
-            let summFilterElem = document.createElement('div');
-            summFilterElem.setAttribute("class", "Filter")
-            summFilterElem.style = `background-image: url('${thumbnailPath}'); background-size: cover; background-repeat: no-repeat; position: absolute; top: 0px; left: 0px;`
-
-            //spawn the title
-            let summTitleElem = document.createElement('p');
-            summTitleElem.style = "font-weight: 400; font-size: 20px; text-align: left; position: absolute; bottom: 26px; left: 3px; font-family: poppins; margin: 0px;"
-
-            if (summary.title.length > 14) {
-                summTitleElem.innerText = summary.title.substring(0, 11) + "...";
-            } 
-            else {
-                summTitleElem.innerText = summary.title;
-            }
-            
-            //append stuff
-            summElem.appendChild(summFilterElem);
-            summElem.appendChild(summTitleElem);
-
-            //spawn Episodes / Season info || Movie length
-            if (summary.type === 'series'){
-                let summMetaElem = document.createElement('p');
-                summMetaElem.style = "font-weight: 150; color: rgba( 255, 255, 255, 0.6); text-align: left; position: absolute; bottom: 0px; left: 3px; font-family: poppins; margin: 0px; font-size: 15px;"
-                summMetaElem.innerHTML = summary.seasons + ' Seasons' + (summary.seasons === '1' ? ' ' : 'n ') + ' | ' + summary.episodes + ' Episodes';
-                summElem.appendChild(summMetaElem);
-            }
-            else if(summary.type === 'movies'){
-                let summMetaElem = document.createElement('p');
-                summMetaElem.style = "font-weight: 150; color: rgba( 255, 255, 255, 0.6); text-align: left; position: absolute; bottom: 0px; left: 3px; font-family: poppins; margin: 0px; font-size: 15px;"
-                summMetaElem.innerHTML = '4,8' + " | " +  summary.length;
-                summElem.appendChild(summMetaElem);
-
-                // Do the resolution icon i guess
-
-                let vidres = getVideoResolution(summary.resolution)
-                console.log(summary.resolution)
-                console.log(vidres)
-
-                if (vidres != 'Unknown Resolution'){
-                    let summResElem = document.createElement("img")
-                    summResElem.src = 'src/' + vidres + '.png'
-                    summResElem.style = "z-index: 99; width: 40px; position: absolute; bottom: 6px; left: 3px;"
-                    summFilterElem.appendChild(summResElem);
-            }
-            }
-
-
-            document.getElementById('rootContainer').appendChild(summElem);
-        }
-
-        let hide_player = function(){
-                document.getElementById("site-container").style.display = "grid"
-                console.log("ALAAAARRRM esc wurde gepresst");
-                player.pause()
-                playerBg.setAttribute('class', 'playerhidden');
-                player.style.display = "inline-block";
-                seasonContainer.innerHTML = '';
-        }
-
-        let loaded = function() {
-            console.log('loaded');
-
-            for (let i = 0; i < Movies.length; i++) {
-                createDiv(Movies[i]);
-            }
-
-            for (let i = 0; i < Series.length; i++){
-                createDiv(Series[i]);
-            }
-
-            chooseTopPick(Movies)
-        }
-
-        //fancy for if(esc pressed){hide player}
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' || event.key === 'Esc') {
-                hide_player()
-            }
-        });
-        
-        loaded();
-        
-        
-        
-        let filter = function(value) {
-            console.log('filtering by ' + value);
-            
-            if (value.length === 0) {
-                resetFilter();
-                return;
-            }
-            
-            const lowValue = value.toLowerCase();
-            
-            for (let movie of Movies) {
-                if (movie.title.toLowerCase().indexOf(lowValue) === -1) {
-                    document.querySelector("." + movie.path).style.display = "none";
-                }
-            }
-
-            for (let serie of Series){
-                if (serie.title.toLowerCase().indexOf(lowValue) === -1) {
-                    document.querySelector("." + serie.path).style.display = "none";
-                }
-            }
-        }
-        
-        let resetFilter = function() {
-            for (let mediaItem of document.querySelectorAll(".media-item")) {
-                mediaItem.style.display = "block";
-            }
+        let dec2bin = function(dec) {
+            return (dec >>> 0).toString(2);
         }
 
 
-        let filterType = function(Type) {
-            
-            
-            if (Type == "Movies") {
-
-                document.getElementById("searchbar_button_movies").style.color = "white"
-                document.getElementById("searchbar_button_series").style.color = "#CACACA"
-                document.getElementById("searchbar_button_audios").style.color = "#CACACA"
-
-                for (let mediaItem of document.querySelectorAll(".media-item")) {
-                    mediaItem.style.display = "block";
-                }
-
-                for (let serie of Series) {
-                    document.querySelector("." + serie.path).style.display = "none";
-                }
-            }
-            
-            if (Type == "Series") {
-
-                document.getElementById("searchbar_button_movies").style.color = "#CACACA"
-                document.getElementById("searchbar_button_series").style.color = "white"
-                document.getElementById("searchbar_button_audios").style.color = "#CACACA"
-
-                for (let mediaItem of document.querySelectorAll(".media-item")) {
-                    mediaItem.style.display = "block";
-                }
-
-                for (let movie of Movies) {
-                    document.querySelector("." + movie.path).style.display = "none";
-                }
-            }
-
-            // TODO: Audios
-            /*
-            if (Type == "Audios") {
-                for (let movie of Movies) {
-                    document.querySelector("." + movie.path).style.display = "none";
-                }
-                for (let serie of Series) {
-                    document.querySelector("." + serie.path).style.display = "none";  
-                }
-
-            }
-            */
-
-        }
+        ///////////////////////////////////////////////////
+        // start rendering UI:
+        addEventListener("load", () => loaded());
 
     </script>
 

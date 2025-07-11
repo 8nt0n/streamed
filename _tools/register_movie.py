@@ -51,7 +51,7 @@ def printHelp():
         + f"{ARG_INCL_GLOB}           include only video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
-        + f"{ARG_SYMLINK}           create symlink(s) to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
+        + f"{ARG_SYMLINK}           create symlinks to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
         + f"{cmn.ARG_VERBOSE}           enables a more verbose logging\n"
         + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit\n"
     )
