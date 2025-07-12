@@ -46,7 +46,8 @@
                         <div class="video-details-container">
 
                             <div class="default-margin video-detail video-player-container">
-                                <video id="videoElement" class="video-player" controls></video>
+                                <video id="videoElement" class="media-player" controls></video>
+                                <audio id="audioElement" class="media-player" controls></audio>
                             </div>
 
                             <div id="seasonContainer" class="default-margin video-detail season-container"></div>
@@ -159,7 +160,6 @@
         const rootPanel = document.getElementById("rootPanel")
         const siteContainer = document.getElementById("siteContainer");
         const playerBg = document.getElementById("playerBg");
-        const player = document.getElementById("videoElement");
         const playerTitle = document.getElementById("movieTitle");
         const playerDescription = document.getElementById("movieDescription");
         const seasonContainer = document.getElementById("seasonContainer");
@@ -168,6 +168,8 @@
         const filterInputContainer = document.getElementById("filterInputContainer");
         const filterInputElem = document.getElementById("filterInput");
      
+        let player;
+
         // randomly selected movies for the 'top pick':
         let randomMovie;
         let randomMovie2;
@@ -202,7 +204,7 @@
 
         
         let initTopPick = function(movieObj, topPickNum) {
-            console.log(`initializing top pick ${topPickNum}: '${movieObj.title}'...`);
+            //console.log(`initializing top pick ${topPickNum}: '${movieObj.title}'...`);
 
             let topPickElem = document.getElementById("topPick" + topPickNum);
             topPickElem.style = `background-image: url('media/${movieObj.type}/${movieObj.path}/meta/${movieObj.thumbnailFile}'); background-color: ${movieObj.thumbColor};`;
@@ -235,12 +237,24 @@
             playerTitle.innerHTML = summary.title;
             playerDescription.innerHTML = summary.description;
             
-            if (summary.type == "movies") {
-                seasonContainer.style.display = "none"
-                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;
-            } else if (summary.type == "series") {
-                seasonContainer.style.display = "flex"
+            let videoPlayer = document.getElementById("videoElement");
+            let audioPlayer = document.getElementById("audioElement");
+            if (summary.type === "audios") {
+                player = audioPlayer;
+                videoPlayer.style.display = "none";
+                audioPlayer.style.display = "inline-block";
+            } else {
+                player = videoPlayer;
+                videoPlayer.style.display = "inline-block";
+                audioPlayer.style.display = "none";
+            }
 
+            if (summary.type === "movies") {
+                seasonContainer.style.display = "none";                
+                player.src = 'media/' + summary.type + '/' + summary.path + '/' + summary.file;
+            } else if (summary.type === "series" || summary.type === "audios") {
+                seasonContainer.style.display = "flex"
+                
                 // single selection element containing all of the episodes of all of the seasons:
                 let episodesContainer = document.createElement("div");
                 episodesContainer.setAttribute("class", "episodes-container");
@@ -281,19 +295,26 @@
         }
 
         let prepareEpisode = function(seriesSummary, seasonNum, episodeNum) {
-            preparePlayer(`media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}`);
+            // TODO: provide the filename(s) with the model:
+            let fileExt = seriesSummary.type === "videos" ? "mp4" : "mp3";
+
+            player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}.${fileExt}`;
+            player.onended = function() {
+                // TODO: check the max season and episode number to get rid of the try/catch:
+                try {
+                    prepareEpisode(seriesSummary, seasonNum, episodeNum + 1);
+                    player.play();
+                } catch (ex) {
+                    console.log(ex);
+                }
+            }
             playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
         }
 
-        let preparePlayer = function(playerSrc) {
-            console.log(playerSrc);
-            player.src = playerSrc + ".mp4"; // TODO: get the filename from the model
-            player.onerror = function() {
-                player.src = playerSrc + ".mkv";
-            };
-        }
 
         let hidePlayer = function() {
+            if (!player) return;
+
             siteContainer.style.display = "grid"
             player.pause()
             playerBg.setAttribute("class", "player-panel-hidden");
@@ -325,8 +346,9 @@
             // details
             let mediaDetailsElem = document.createElement("p");
             mediaDetailsElem.setAttribute("class", "listitem-details-panel");
-            if (summary.type === "series") {
+            if (summary.type === "series" || summary.type === "audios") {
                 // number of seasons and total episodes count
+//                console.log(`adding ${summary.title} to the media overview...`);
                 mediaDetailsElem.innerText = `${summary.seasons} Season${(summary.seasons === "1" ? "" : "s")} | ${summary.episodes} Episodes`;
             } else if (summary.type === "movies") {
                 // movie length and resolution
@@ -334,7 +356,7 @@
 
                 // resolution icon
                 let videoResolution = getVideoResolution(summary.resolution);
-                console.log(`${summary.resolution} >>> ${videoResolution}`);
+//                console.log(`${summary.resolution} >>> ${videoResolution}`);
 
                 if (videoResolution !== "Unknown Resolution") {
                     let resolutionIconElem = document.createElement("img");
@@ -350,7 +372,7 @@
 
 
         let loaded = function() {
-            console.log('loaded');
+//            console.log('loaded');
 
             for (let i = 0; i < Movies.length; i++) {
                 createDiv(Movies[i]);
@@ -358,6 +380,10 @@
 
             for (let i = 0; i < Series.length; i++){
                 createDiv(Series[i]);
+            }
+
+            for (let i = 0; i < Audios.length; i++){
+                createDiv(Audios[i]);
             }
 
             if (Movies.length > 1) {
@@ -371,11 +397,7 @@
             }
             chooseTopPick(Movies)
 
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape' || event.key === 'Esc') {
-                    hidePlayer()
-                }
-            });
+            document.addEventListener('keydown', (evt) => { if (evt.key === 'Escape' || evt.key === 'Esc') hidePlayer();  });
         }
         
 
@@ -385,13 +407,13 @@
             typeFilterBits ^= type;
             srcElem.style.textDecoration = (typeFilterBits & type) === type ? "underline" : "none";
 
-            //console.log(`type=${type}; typeFilterBits=${typeFilterBits}; typeFilterBits & type=${typeFilterBits & type}`);
+//            console.log(`type=${type}; typeFilterBits=${typeFilterBits}; typeFilterBits & type=${typeFilterBits & type}`);
 
             filterMedia();
         }
 
         let onFilterByTextMatch = function(value) {
-            console.log(`filtering by text value '${value}'...`);
+//            console.log(`filtering by text value '${value}'...`);
             searchText = value;
 
             filterMedia();
@@ -403,7 +425,7 @@
             if (typeFilterBits !== FILTER_NONE) {
                 let hideBits = ~typeFilterBits;
 
-                //console.log(`typeFilterBits=${dec2bin(typeFilterBits).toString(2)}\n      hideBits=${dec2bin(hideBits).toString(2)}`);
+//                console.log(`typeFilterBits=${dec2bin(typeFilterBits).toString(2)}\n      hideBits=${dec2bin(hideBits).toString(2)}`);
 
                 if ((hideBits & FILTER_MOVIES) === FILTER_MOVIES) {
                     for (let movie of document.querySelectorAll(".movies")) {
@@ -429,7 +451,7 @@
             const lowValue = searchText.toLowerCase();
             filterTitles(Movies, lowValue);
             filterTitles(Series, lowValue);
-            //filterTitles(Audios, lowValue); // TODO: add empty 'Audios' array when creating/refreshing the model
+            filterTitles(Audios, lowValue);
         }
 
         let filterTitles = function(mediaList, lowerSearchText) {

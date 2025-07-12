@@ -110,11 +110,10 @@ body {
     background-color: transparent;
 }
 
-.video-player {
+.media-player {
     border-radius: 6px;
     width: 100%;
 }
-
 
 .video-detail {
     border-radius: 6px;

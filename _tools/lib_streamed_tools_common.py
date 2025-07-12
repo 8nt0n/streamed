@@ -11,8 +11,10 @@ DBG_MSG_PATTERN = re.compile("^\s*\[DBG\]\s")
 
 MEDIA_TYPE_MOVIES = "movies"
 MEDIA_TYPE_SERIES = "series"
+MEDIA_TYPE_AUDIOS = "audios"
 MEDIA_DIR_PATH = os.path.join("..", "media")
 
+AUDIO_FILE_PATTERN = re.compile("(?i)\\.(mp3|aiff?)$")
 VIDEO_FILE_PATTERN = re.compile("(?i)\\.(mp4|mkv|avi|mpe?g)$")
 IMAGE_FILE_PATTERN = re.compile("(?i)\\.(jpe?g|png|gif|svg)$")
 FILENAME_REPLACE_PATTERN = re.compile("(?:([a-z])([A-Z]))")
@@ -44,11 +46,16 @@ def findSysArgValue(argName, validator):
         
     
 def isVideoFile(path):
-    return os.path.isfile(path) and re.search(VIDEO_FILE_PATTERN, path) != None
-    
+    return isFileOfType(path, VIDEO_FILE_PATTERN)   
+
+def isAudioFile(path):
+    return isFileOfType(path, AUDIO_FILE_PATTERN)
 
 def isImageFile(path):
-    return os.path.isfile(path) and re.search(IMAGE_FILE_PATTERN, path) != None
+    return isFileOfType(path, IMAGE_FILE_PATTERN)
+
+def isFileOfType(path, pattern):
+    return os.path.isfile(path) and re.search(pattern, path) != None
 
 
 def parentDirOf(path):

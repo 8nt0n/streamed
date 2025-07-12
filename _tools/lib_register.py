@@ -69,3 +69,24 @@ def registerEpisode(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, createSy
     else:
         shutil.copy2(srcFile, targetPath)  # use shutil.copy2() to preserve timestamp
         cmn.log(f" [DBG] {srcFile} copied to {targetPath}")
+
+
+def registerAlbumTrack(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, createSymlink):
+    cmn.log(f"[INFO] registering album track '{srcFile}' (target: '{targetSeasonDir}')")
+    
+    if srcFile == None:
+        raise RuntimeError("no valid video file provided")
+
+    # copy (or link) video file
+    targetPath = os.path.join(targetSeasonDir, str(episodeNum) + cmn.fileExtensionOf(srcFile))
+    if createSymlink: # problematic under Windows
+        symlinkPath = targetPath
+        try:
+            os.symlink(srcFile, symlinkPath)
+            cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
+        except Exception as ex:
+            cmn.log(f" [ERR] failed to symlink {srcFile} to {symlinkPath}: {ex}")
+            raise ex
+    else:
+        shutil.copy2(srcFile, targetPath)  # use shutil.copy2() to preserve timestamp
+        cmn.log(f" [DBG] {srcFile} copied to {targetPath}")

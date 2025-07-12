@@ -52,7 +52,7 @@ def writeData(content, mediatype):
 
             file.write("            description: '")
             file.write(content["description"] + "',\n\n")
-        elif mediatype == "series":
+        elif mediatype == "series" or mediatype == "audios":
             file.write("            seasons: '")
             file.write(content["Seasons"] + "',\n")
 
@@ -283,7 +283,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 DATA['thumbnailFile'] = thumbnailFile
                 DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
                 
-        #get Seasons i necessary
+        # write Seasons
         if mediatype == cmn.MEDIA_TYPE_SERIES:           
             #get Episodes
             Seasons = 0
@@ -295,6 +295,35 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 if seasonDirName != "meta":
 #                    Episodes += int(len(os.listdir(mediapath + "/" +  path + "/" + i)))
 #                    SeasonsEp.append(int(len(os.listdir(mediapath + "/" +  path + "/" + i))))
+                    Seasons += 1
+                    episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
+                    count = len(episodeVideoFiles)
+                    Episodes += count
+                    SeasonsEp.append(count)
+                    if count > 0 and videoFilePath == None:
+                        videoFilePath = os.path.join(videoDirPath, seasonDirName, episodeVideoFiles[0])
+            
+            DATA["path"] = subfolder
+            DATA["Seasons"] = str(Seasons)
+            DATA["Episodes"] = str(Episodes)
+            DATA["SeasonEp"] = str(SeasonsEp)
+            
+            if videoFilePath != None:
+                mediaInfo = mediaInfoExtractor(videoFilePath)
+                thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+                if thumbnailFile != None:
+                    DATA['thumbnailFile'] = thumbnailFile
+                    DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
+
+        # write Audios
+        if mediatype == cmn.MEDIA_TYPE_AUDIOS:
+            Seasons = 0
+            SeasonsEp = []
+            Episodes = 0
+            
+            videoFilePath = None
+            for seasonDirName in cmn.orderedFileList(videoDirPath):
+                if seasonDirName != "meta":
                     Seasons += 1
                     episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
                     count = len(episodeVideoFiles)
@@ -332,8 +361,6 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             cmn.log(f'[WARN] {descrPath} not found')
             
         #write the gathered data to the actual data.js file
-#        print(DATA)
-#        print("\n\n\n")
         writeData(DATA, mediatype)
         count += 1
 
@@ -445,12 +472,16 @@ def refresh(forceThumbnailReCreation):
     
     thumbnailSupplier = initThumbnailSupplier()
 
-    writeHeader("Movies", type="start") #always call this 1. (argument is the name of the list in js)
-    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation) #call all the metainfos 2.and
-    writeFooter(type = "List") # always call this last (type = list only places the list footer type != list places the final footer)
+    writeHeader("Movies", type="start")
+    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
+    writeFooter(type = "List")
 
     writeHeader("Series", type="anythingBesidesStart")
-    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation) #call all the metainfos 2.and
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
+    writeFooter(type = "List")
+
+    writeHeader("Audios", type="anythingBesidesStart")
+    get_metainfo(cmn.MEDIA_TYPE_AUDIOS, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
     writeFooter(type = "notList")
 
     os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
