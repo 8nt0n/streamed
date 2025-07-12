@@ -175,19 +175,41 @@ def thumbnail(videoFilePath, metaDirPath, mediaInfoMap, thumbnailSupplier, force
 def thumbnailSvg(videoFilePath, metaDirPath):
     videoDirPath = Path(videoFilePath).parent
     title = cmn.fileNameToTitle(cmn.parentDirOf(metaDirPath))
+    words = title.split()
+    lines = []
+    tmpLine = ""
+    for word in words:
+        if len(tmpLine) + len(word) + 1 >= 12:
+            lines.append(tmpLine)
+            tmpLine = word
+        else:
+            tmpLine += (" " + word)
+
+    if len(tmpLine) != 0:
+        lines.append(tmpLine)
     
     svgContent = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
-    <svg viewBox="0 0 270 150"
+    <svg viewBox="0 0 150 270"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
         xmlns:xlink="http://www.w3.org/1999/xlink"
         xml:lang="de"
-        font-size="20" font-family="sans-serif">
+        font-size="20"
+        font-family="sans-serif"
+        stroke="#eee">
       <title>{title}</title>
       <g>
-        <text x="30" y="70" textLength="210" lengthAdjust="spacingAndGlyphs" fill="#eee">{title}</text>
+        <text x="0" y="0">'''
+
+    lineNum = 1
+    for line in lines:
+        svgContent += f'''    <tspan x="50%" y="{1.2 * lineNum}em" textLength="100%" lengthAdjust="spacingAndGlyphs" text-anchor="middle">{line}</tspan>'''
+        lineNum += 1
+
+    svgContent += f'''</text>
       </g>
-    </svg>'''      
+    </svg>'''
+
     thumbnailFile = "thumbnail.svg"
     thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
     cmn.writeTextFile(thumbnailPath, svgContent)
