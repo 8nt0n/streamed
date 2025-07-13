@@ -179,7 +179,7 @@ def thumbnailSvg(videoFilePath, metaDirPath):
     lines = []
     tmpLine = ""
     for word in words:
-        if len(tmpLine) + len(word) + 1 >= 12:
+        if len(tmpLine) + len(word) + 1 >= 16:
             lines.append(tmpLine)
             tmpLine = word
         else:
