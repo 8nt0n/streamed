@@ -5,8 +5,10 @@ import os
 import re
 import sys
 
+ARG_HELP = "-h"
+ARG_HELP_LONG = "--help"
 ARG_VERBOSE = "-v"
-LOG_DBG = ARG_VERBOSE in sys.argv
+LOG_DBG = ARG_VERBOSE in sys.argv 
 DBG_MSG_PATTERN = re.compile("^\s*\[DBG\]\s")
 
 MEDIA_TYPE_MOVIES = "movies"
