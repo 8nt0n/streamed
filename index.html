@@ -304,7 +304,7 @@
 
         let prepareEpisode = function(seriesSummary, seasonNum, episodeNum) {
             // TODO: provide the filename(s) with the model:
-            let fileExt = seriesSummary.type === "videos" ? "mp4" : "mp3";
+            let fileExt = seriesSummary.type === "series" ? "mp4" : "mp3";
 
             player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}.${fileExt}`;
             player.onended = function() {

@@ -11,8 +11,8 @@ ARG_HELP = "-h"
 ARG_HELP_LONG = "--help"
 ARG_SRC_FILE = "-s"
 ARG_SRC_FOLDER = "-f"
-ARG_MOVIE_TITLE = "-t"
-ARG_MOVIE_DESCR = "-d"
+ARG_MOVIE_NAME = "-n"
+ARG_MOVIE_DESCRIPTION = "-d"
 ARG_RECURSIVE = "-r"
 ARG_MEDIA_DIR = "-m"
 ARG_SYMLINK = "-l"
@@ -27,8 +27,8 @@ def printHelp():
         "Usage:\n"
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FILE} <source video file>"
-        + f" [{ARG_MOVIE_TITLE} <movie title>]"
-        + f" [{ARG_MOVIE_DESCR} <movie description>]"
+        + f" [{ARG_MOVIE_NAME} <movie name>]"
+        + f" [{ARG_MOVIE_DESCRIPTION} <movie description>]"
         + f" [{ARG_MEDIA_DIR} <media repository>]"
         + f" [{ARG_SYMLINK}]"
         + f" [{cmn.ARG_VERBOSE}]\n"
@@ -46,8 +46,8 @@ def printHelp():
         + f"{ARG_SRC_FILE}           path to the source video (mandatory when adding a single movie file to the media repository)\n"
         + f"{ARG_SRC_FOLDER}           path to the folder containing the video files (mandatory when adding multiple movie files to the media repository)\n"
         + f"{ARG_MEDIA_DIR}           path to the target media repository containing your streamable movies, defaults to {cmn.MEDIA_DIR_PATH}\n"
-        + f"{ARG_MOVIE_TITLE}           the movie's title when adding a single movie file to the media repository (will be extracted from the source video file's name if not present)\n"
-        + f"{ARG_MOVIE_DESCR}           the movie's description when adding a single movie file to the media repository, may be a string or a text file (defaults to the movie's title)\n"
+        + f"{ARG_MOVIE_NAME}           the movie's title when adding a single movie file to the media repository (will be extracted from the source video file's name if not present)\n"
+        + f"{ARG_MOVIE_DESCRIPTION}           the movie's description when adding a single movie file to the media repository, may be a string or a text file (defaults to the movie's title)\n"
         + f"{ARG_INCL_GLOB}           include only video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
@@ -61,8 +61,8 @@ def printHelp():
         + "# register (copy) a single movie file:\n"
         + f"python {sys.argv[0]} \\ \n"
         + f" {ARG_SRC_FILE} /home/me/videos/blues_brothers.mp4 \\ \n"
-        + f" {ARG_MOVIE_TITLE} \"The Blues Brothers\" \\ \n"
-        + f" {ARG_MOVIE_DESCR} \"\\\"The Blues Brothers\\\" is a 1980 American musical action comedy film directed by John Landis with John Belushi and Dan Aykroyd.\"\n"
+        + f" {ARG_MOVIE_NAME} \"The Blues Brothers\" \\ \n"
+        + f" {ARG_MOVIE_DESCRIPTION} \"\\\"The Blues Brothers\\\" is a 1980 American musical action comedy film directed by John Landis with John Belushi and Dan Aykroyd.\"\n"
         + "# register (symlink) all of the movie files located in the provided folder and its subfolders:\n"
         + f"python {sys.argv[0]}"
         + f" {ARG_SRC_FOLDER} /home/me/videos/"
@@ -108,8 +108,8 @@ def main():
         if srcFile != None:
             singleMovieMode = True
             
-            movieTitle = cmn.findSysArgValue(ARG_MOVIE_TITLE, NOOP_VALIDATOR) or cmn.fileNameToTitle(srcFile)
-            movieDescr = cmn.findSysArgValue(ARG_MOVIE_DESCR, NOOP_VALIDATOR) or movieTitle
+            movieTitle = cmn.findSysArgValue(ARG_MOVIE_NAME, NOOP_VALIDATOR) or cmn.fileNameToTitle(srcFile)
+            movieDescr = cmn.findSysArgValue(ARG_MOVIE_DESCRIPTION, NOOP_VALIDATOR) or movieTitle
 
             cmn.log(f"[INFO] source file: {srcFile}")
             cmn.log(f"[INFO] movie title: {movieTitle}")

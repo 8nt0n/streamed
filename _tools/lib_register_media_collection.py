@@ -138,7 +138,7 @@ def register(mediaType, srcDir, targetDir, collectionNum, inclPattern, exclPatte
         if mediaTypeCheck(srcPath) and inclPattern.fullmatch(fsElem) != None and exclPattern.fullmatch(fsElem) == None:
             num = num + 1
             try:
-                reg.registerCollectionFile(srcPath, targetSeasonDir, mediaRepoDir, num, createSymlink)
+                reg.registerCollectionFile(srcPath, targetPath, mediaRepoDir, num, createSymlink)
             except Exception as ex:
                 cmn.log(f" [ERR] failed to register media collection file '{fsElem}': {ex}")
         else:

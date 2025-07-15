@@ -62,11 +62,13 @@ def registerCollectionFile(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, c
     if createSymlink: # seems still to be problematic under Windows
         symlinkPath = targetPath
         try:
+            cmn.log(f" [DBG] linking {srcFile} to {symlinkPath}...")
             os.symlink(srcFile, symlinkPath)
             cmn.log(f" [DBG] symlink to {srcFile} created: {symlinkPath}")
         except Exception as ex:
             cmn.log(f" [ERR] failed to symlink {srcFile} to {symlinkPath}: {ex}")
             raise ex
     else:
+        cmn.log(f" [DBG] copying {srcFile} to {targetPath}...")
         shutil.copy2(srcFile, targetPath)  # use shutil.copy2() to preserve timestamp
         cmn.log(f" [DBG] {srcFile} copied to {targetPath}")
