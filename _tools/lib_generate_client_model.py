@@ -83,6 +83,7 @@ def writeHeader(name, type):
     with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
         if type == "start":
             file.write("{\n")
+
         file.write("    var " + name + " = [\n")
 
 def writeFooter(type):
@@ -179,7 +180,7 @@ def thumbnailSvg(videoFilePath, metaDirPath):
     lines = []
     tmpLine = ""
     for word in words:
-        if len(tmpLine) + len(word) + 1 >= 16:
+        if len(tmpLine) + len(word) + 1 >= 12:
             lines.append(tmpLine)
             tmpLine = word
         else:
@@ -305,59 +306,27 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 DATA['thumbnailFile'] = thumbnailFile
                 DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
                 
-        # write Seasons
-        if mediatype == cmn.MEDIA_TYPE_SERIES:           
-            #get Episodes
-            Seasons = 0
-            SeasonsEp = []
-            Episodes = 0
+        # write media collections (Seasons or Audios)
+        if mediatype == cmn.MEDIA_TYPE_SERIES or mediatype == cmn.MEDIA_TYPE_AUDIOS:
+            seasonsCount = 0
+            episodesCount = 0
+            episodeFiles = []
             
             videoFilePath = None
             for seasonDirName in cmn.orderedFileList(videoDirPath):
                 if seasonDirName != "meta":
-#                    Episodes += int(len(os.listdir(mediapath + "/" +  path + "/" + i)))
-#                    SeasonsEp.append(int(len(os.listdir(mediapath + "/" +  path + "/" + i))))
-                    Seasons += 1
+                    seasonsCount += 1
                     episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
                     count = len(episodeVideoFiles)
-                    Episodes += count
-                    SeasonsEp.append(count)
+                    episodesCount += count
+                    episodeFiles.append(episodeVideoFiles)
                     if count > 0 and videoFilePath == None:
                         videoFilePath = os.path.join(videoDirPath, seasonDirName, episodeVideoFiles[0])
             
             DATA["path"] = subfolder
-            DATA["Seasons"] = str(Seasons)
-            DATA["Episodes"] = str(Episodes)
-            DATA["SeasonEp"] = str(SeasonsEp)
-            
-            if videoFilePath != None:
-                mediaInfo = mediaInfoExtractor(videoFilePath)
-                thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
-                if thumbnailFile != None:
-                    DATA['thumbnailFile'] = thumbnailFile
-                    DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
-
-        # write Audios
-        if mediatype == cmn.MEDIA_TYPE_AUDIOS:
-            Seasons = 0
-            SeasonsEp = []
-            Episodes = 0
-            
-            videoFilePath = None
-            for seasonDirName in cmn.orderedFileList(videoDirPath):
-                if seasonDirName != "meta":
-                    Seasons += 1
-                    episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
-                    count = len(episodeVideoFiles)
-                    Episodes += count
-                    SeasonsEp.append(count)
-                    if count > 0 and videoFilePath == None:
-                        videoFilePath = os.path.join(videoDirPath, seasonDirName, episodeVideoFiles[0])
-            
-            DATA["path"] = subfolder
-            DATA["Seasons"] = str(Seasons)
-            DATA["Episodes"] = str(Episodes)
-            DATA["SeasonEp"] = str(SeasonsEp)
+            DATA["Seasons"] = str(seasonsCount)
+            DATA["Episodes"] = str(episodesCount)
+            DATA["SeasonEp"] = str(episodeFiles)
             
             if videoFilePath != None:
                 mediaInfo = mediaInfoExtractor(videoFilePath)

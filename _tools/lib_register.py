@@ -58,7 +58,8 @@ def registerCollectionFile(srcFile, targetSeasonDir, mediaRepoDir, episodeNum, c
         raise RuntimeError("no valid media file provided")
 
     # copy (or link) video file
-    targetPath = os.path.join(targetSeasonDir, str(episodeNum) + cmn.fileExtensionOf(srcFile))
+    srcFileName = os.path.basename(srcFile)
+    targetPath = os.path.join(targetSeasonDir, srcFileName)
     if createSymlink: # seems still to be problematic under Windows
         symlinkPath = targetPath
         try:

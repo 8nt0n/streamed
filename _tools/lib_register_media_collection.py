@@ -116,7 +116,7 @@ def register(mediaType, srcDir, targetDir, collectionNum, inclPattern, exclPatte
     # create description text file in the 'meta' subfolder
     descrFilePath = os.path.join(metaFolder, "description.txt") # TODO: use constant
     if not os.path.isfile(descrFilePath):
-        collectionDescr = collectionDescr or movieTitle
+        collectionDescr = collectionDescr or collectionName
         try:
             with open(descrFilePath, "a") as file:
                 file.write(collectionDescr)

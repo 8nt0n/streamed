@@ -170,6 +170,7 @@
      
         let player;
         let volumeValue = 0.5;
+        let repeatingPlay = false; // re-start at the beginning after having finished playback, for now fix 'off'
 
         // randomly selected movies for the 'top pick':
         let randomMovie;
@@ -283,40 +284,66 @@
 
                     episodesContainer.appendChild(seasonOption);
 
-                    for (let episodeNum = 0; episodeNum < summary.seasonEp[i]; episodeNum++) {
+                    let episodeNum = 0;
+                    for (let episodeFile of summary.seasonEp[i]) {
+                        const epNum = ++episodeNum; // must be a const for use in the click handler lambda below
                         let episodeOption = document.createElement("div");
                         episodeOption.setAttribute("class", "clickable series-option episode-option");
-                        episodeOption.innerText = `Episode ${episodeNum + 1}`;
+                        episodeOption.innerText = `Episode ${episodeNum}`;
                         episodeOption.addEventListener(
                             "click", 
-                            () => prepareEpisode(summary, seasonNum, episodeNum + 1)
+                            () => prepareEpisode(summary, seasonNum, epNum, episodeFile)
                         );
                         episodesContainer.appendChild(episodeOption);
                     }
                 }                
                 seasonContainer.appendChild(episodesContainer);
 
-                prepareEpisode(summary, 1, 1);
+                prepareEpisode(summary, 1, 1, summary.seasonEp[0][0]);
             }
             
             player.volume = volumeValue;
         }
 
-        let prepareEpisode = function(seriesSummary, seasonNum, episodeNum) {
-            // TODO: provide the filename(s) with the model:
-            let fileExt = seriesSummary.type === "series" ? "mp4" : "mp3";
+        let prepareEpisode = function(seriesSummary, seasonNum, episodeNum, episodeFile) {
+            console.log(`prepareEpisode(summary, ${seasonNum}, ${episodeNum}, '${episodeFile}')` )
 
-            player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeNum}.${fileExt}`;
-            player.onended = function() {
-                // TODO: check the max season and episode number to get rid of the try/catch:
-                try {
-                    prepareEpisode(seriesSummary, seasonNum, episodeNum + 1);
-                    player.play();
-                } catch (ex) {
-                    console.log(ex);
+            playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+            player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeFile}`;
+
+            // prepare the next episode/track for continuous play:
+            let nextSeasonNum = seasonNum;
+            let nextEpNum = episodeNum + 1;
+            let nextEpFile;
+            if (seriesSummary.seasonEp[nextSeasonNum - 1].length >= nextEpNum) {
+                // same saeson, next episode
+                nextEpFile = seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1];
+            } else {
+                nextSeasonNum++;
+                nextEpNum = 1;
+                if (seriesSummary.seasonEp.length >= nextSeasonNum && seriesSummary.seasonEp[nextSeasonNum - 1].length >= nextEpNum) {
+                    // next saeson, first episode
+                    nextEpFile = seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1];
+                } else {
+                    // first saeson, first episode (but only play if the 'repeatingPlay' flag is set)
+                    nextSeasonNum = 1;
+                    nextEpNum = 1;
+                    nextEpFile = repeatingPlay ? seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1] : null;
                 }
             }
-            playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+
+            if (nextEpFile) {
+                player.onended = function() {
+                    try {
+                        prepareEpisode(seriesSummary, nextSeasonNum, nextEpNum, nextEpFile);
+                        player.play();
+                    } catch (ex) {
+                        console.log(ex);
+                    }
+                }
+            } else {
+                player.onended = undefined;
+            }
         }
 
 
