@@ -176,6 +176,8 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: left;
+    white-space: nowrap;
+    overflow-x: hidden;
 }
 
 .dark-color-mode .series-option {
@@ -201,6 +203,7 @@ body {
 
 .season-thumbnail {
     height: 100%;
+    min-width: 30px;
 }
 
 

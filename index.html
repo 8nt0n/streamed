@@ -266,20 +266,21 @@
                 let episodesContainer = document.createElement("div");
                 episodesContainer.setAttribute("class", "episodes-container");
 
+                const isAudio = summary.type === "audios";
                 for (let i = 0; i < summary.seasons; i++) {
                     let seasonOption = document.createElement("div");
                     seasonOption.setAttribute("class", "series-option");
-                    let cover = document.createElement("img");
                     let seasonNum = i + 1;
-                    cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
-                    cover.setAttribute("id", seasonNum)
-                    cover.setAttribute("alt", "Staffel " + (seasonNum));
-                    cover.setAttribute("class", "season-thumbnail");
-                    seasonOption.appendChild(cover);
+                    // let cover = document.createElement("img");
+                    // cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
+                    // cover.setAttribute("id", seasonNum)
+                    // cover.setAttribute("alt", seasonNum);
+                    // cover.setAttribute("class", "season-thumbnail");
+                    // seasonOption.appendChild(cover);
 
                     let seasonNumText = document.createElement("div");
                     seasonNumText.setAttribute("class", "season-number-panel");
-                    seasonNumText.innerText = `Season ${seasonNum}`;
+                    seasonNumText.innerText = isAudio ? `Audio collection${summary.seasons > 1 ? (' ' + seasonNum) : ''}` : `Season ${seasonNum}`;
                     seasonOption.appendChild(seasonNumText);
 
                     episodesContainer.appendChild(seasonOption);
@@ -288,8 +289,9 @@
                     for (let episodeFile of summary.seasonEp[i]) {
                         const epNum = ++episodeNum; // must be a const for use in the click handler lambda below
                         let episodeOption = document.createElement("div");
-                        episodeOption.setAttribute("class", "clickable series-option episode-option");
-                        episodeOption.innerText = `Episode ${episodeNum}`;
+                        episodeOption.setAttribute("style", "");
+                        episodeOption.setAttribute("class", "clickable series-option episode-option ep-" + epNum);
+                        episodeOption.innerText = `${episodeNum} - ${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
                         episodeOption.addEventListener(
                             "click", 
                             () => prepareEpisode(summary, seasonNum, epNum, episodeFile)
@@ -309,7 +311,10 @@
             console.log(`prepareEpisode(summary, ${seasonNum}, ${episodeNum}, '${episodeFile}')` )
 
             playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+            document.querySelectorAll(".episode-option").forEach((div) => div.style = "");
+            document.querySelector(".episode-option.ep-" + episodeNum).style = "font-weight: 600; opacity: 1;"
             player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeFile}`;
+
 
             // prepare the next episode/track for continuous play:
             let nextSeasonNum = seasonNum;
