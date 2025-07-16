@@ -200,7 +200,7 @@
                 bodyElement.style.background = "content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189))";
             } else {
                 rootPanel.setAttribute("class", "dark-color-mode");
-                bodyElement.style.background = "content-box radial-gradient(rgb(62, 67, 70), rgb(14, 47, 59))";
+                bodyElement.style.background = "content-box radial-gradient(rgb(42, 47, 50), rgb(14, 47, 59))";
             }
         }
 
@@ -290,8 +290,9 @@
                         const epNum = ++episodeNum; // must be a const for use in the click handler lambda below
                         let episodeOption = document.createElement("div");
                         episodeOption.setAttribute("style", "");
-                        episodeOption.setAttribute("class", "clickable series-option episode-option ep-" + epNum);
-                        episodeOption.innerText = `${episodeNum} - ${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+                        episodeOption.setAttribute("class", `clickable series-option episode-option ep-${seasonNum}-${epNum}`);
+//                        episodeOption.innerText = `(${episodeNum}) - ${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+                        episodeOption.innerText = `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
                         episodeOption.addEventListener(
                             "click", 
                             () => prepareEpisode(summary, seasonNum, epNum, episodeFile)
@@ -312,7 +313,7 @@
 
             playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
             document.querySelectorAll(".episode-option").forEach((div) => div.style = "");
-            document.querySelector(".episode-option.ep-" + episodeNum).style = "font-weight: 600; opacity: 1;"
+            document.querySelector(`.episode-option.ep-${seasonNum}-${episodeNum}`).style = "font-weight: 600; opacity: 1;"
             player.src = `media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeFile}`;
 
 
@@ -435,9 +436,12 @@
                 randomMovie = Movies[0];
                 randomMovie2 = Movies[0];
             }
-            chooseTopPick(Movies)
+            chooseTopPick(Movies);
 
-            document.addEventListener('keydown', (evt) => { if (evt.key === 'Escape' || evt.key === 'Esc') hidePlayer();  });
+            document.addEventListener(
+                "keydown", 
+                (evt) => { if (evt.key === 'Escape' || evt.key === 'Esc') hidePlayer(); }
+            );
         }
         
 
