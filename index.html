@@ -154,6 +154,15 @@
         const FILTER_AUDIOS = 4;
         let typeFilterBits = FILTER_NONE;
         let searchText = "";
+
+        // cookies:
+        const COOKIE_COLOR_MODE = "colormode";
+        const COOKIE_VOLUME = "volume";
+
+        // color mode (style classes):
+        const COLOR_MODE_DFLT = "default-color-mode";
+        const COLOR_MODE_DARK = "dark-color-mode";
+        let colorMode;
         
         // some HTML elements:
         const bodyElement = document.getElementById("bodyElement");
@@ -168,8 +177,10 @@
         const filterInputContainer = document.getElementById("filterInputContainer");
         const filterInputElem = document.getElementById("filterInput");
      
+        // media player:
+        const VOLUME_DFLT = 0.5;
+        let volumeValue;        
         let player;
-        let volumeValue = 0.5;
         let repeatingPlay = false; // re-start at the beginning after having finished playback, for now fix 'off'
 
         // randomly selected movies for the 'top pick':
@@ -195,13 +206,40 @@
 
 
         let toggleColorMode = function() {
-            if (rootPanel.getAttribute("class") === "dark-color-mode") {
-                rootPanel.setAttribute("class", "default-color-mode");
+            applyColorMode(
+                colorMode === COLOR_MODE_DARK ? COLOR_MODE_DFLT : COLOR_MODE_DARK,
+                true
+            );
+        }
+        
+        let applyColorMode = function(colorModeClass, updateCookie) {
+            colorMode = colorModeClass;
+            rootPanel.setAttribute("class", colorModeClass);
+            if (colorModeClass === COLOR_MODE_DFLT) {
                 bodyElement.style.background = "content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189))";
             } else {
-                rootPanel.setAttribute("class", "dark-color-mode");
                 bodyElement.style.background = "content-box radial-gradient(rgb(42, 47, 50), rgb(14, 47, 59))";
             }
+
+            if (updateCookie) {
+                refreshCookie();
+            }
+        }
+
+        let refreshCookie = function() {
+            document.cookie = `${COOKIE_COLOR_MODE}=${colorMode}`;
+            document.cookie = `${COOKIE_VOLUME}=${volumeValue}`;
+//            console.log(`cookie refreshed: ${document.cookie}`);
+        }
+
+        let cookieValue = function(cookieName, fallbackValue) {
+            let keyFValuePair = document.cookie
+                .split(/; ?/)
+                .find((kv) => kv.startsWith(`${cookieName}=`));
+
+            const retVal = keyFValuePair ? keyFValuePair.split("=")[1] : fallbackValue;
+//            console.log(`delivering '${cookieName}' cookie value: ${retVal} (${typeof retVal})`);
+            return retVal;
         }
 
         
@@ -253,7 +291,8 @@
 
             player.onvolumechange = () => {
                 volumeValue = player.volume;
-                console.log(`handled volume change - volumeValue=${volumeValue}`);
+//                console.log(`handled volume change - volumeValue=${volumeValue}`);
+                refreshCookie();
             }
 
             if (summary.type === "movies") {
@@ -309,7 +348,7 @@
         }
 
         let prepareEpisode = function(seriesSummary, seasonNum, episodeNum, episodeFile) {
-            console.log(`prepareEpisode(summary, ${seasonNum}, ${episodeNum}, '${episodeFile}')` )
+//            console.log(`prepareEpisode(summary, ${seasonNum}, ${episodeNum}, '${episodeFile}')` )
 
             playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
             document.querySelectorAll(".episode-option").forEach((div) => div.style = "");
@@ -437,6 +476,15 @@
                 randomMovie2 = Movies[0];
             }
             chooseTopPick(Movies);
+
+            // apply cookie values (if present)
+            colorMode = cookieValue(COOKIE_COLOR_MODE, COLOR_MODE_DFLT);
+            applyColorMode(colorMode, false);
+            volumeValue = parseFloat(cookieValue(COOKIE_VOLUME, VOLUME_DFLT));
+            if (isNaN(volumeValue)) {
+                volumeValue = VOLUME_DFLT;
+                refreshCookie();
+            }
 
             document.addEventListener(
                 "keydown", 
