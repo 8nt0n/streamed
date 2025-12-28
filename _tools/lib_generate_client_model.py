@@ -223,7 +223,8 @@ def thumbnailSvg(videoFilePath, metaDirPath):
 def thumbnailFromFFMpeg(videoFilePath, metaDirPath, mediaInfoMap):
     thumbnailFile = "thumbnail.jpeg"
     atSecond = str(round(float(mediaInfoMap["Duration"]) / 10))
-    complProc = subprocess.run(['ffmpeg', '-i', videoFilePath, '-ss', atSecond, '-vframes', '1', '-q:v', '5', '-s', '220x150', '-v', 'quiet', os.path.join(metaDirPath, thumbnailFile)], capture_output = False)
+    # https://ffmpeg.run/posts/how-to-extract-image-frame-from-video-ffmpeg: "Placing the -ss parameter before the -i flag tells FFmpeg to use a much faster seeking method based on keyframes."
+    complProc = subprocess.run(['ffmpeg', '-ss', atSecond, '-i', videoFilePath, '-vframes', '1', '-q:v', '5', '-s', '220x150', '-v', 'quiet', os.path.join(metaDirPath, thumbnailFile)], capture_output = False)
     return thumbnailFile
 
 
