@@ -26,7 +26,7 @@
 
     <body id="bodyElement" class="disable-scrollbars">
 
-        <div id="rootPanel" class="default-color-mode" style="min-height: 100vh; margin: 0px; padding: 0px;">
+        <div id="rootPanel" class="default-color-mode" style="min-height: 100vh; margin: 0px; padding: 0px; display: flex; align-items: center; justify-content: center;">
 
             <div class="stylable-root-panel">
 
@@ -63,30 +63,33 @@
 
                 <div id="siteContainer" class="site-container">
 
-                    <!-- top bar -->
-                    <div id="topBar" class="top-bar">
-                        <p class="clickable clickable-text default-margin top-bar-title" onclick="location.reload();">Streamed</p>
+                    <!-- inline styles are soooo back -->
+                    <div style="width: 100%; height: 100%; overflow: auto;">
 
-                        <div id="searchbarContainer" class="default-margin searchbar-container">
-                            <!-- type filters -->
-                            <div id="filterByTypeMovieBtn" 
-                                class="clickable clickable-text filter-by-type movies-filter" 
-                                onclick="onTypeFilterToggled(FILTER_MOVIES, this);">Movies</div>
-                            <div id="filterByTypeSeriesBtn" 
-                                class="clickable clickable-text filter-by-type series-filter"
-                                onclick="onTypeFilterToggled(FILTER_SERIES, this);">Series</div>
-                            <div id="filterByTypeAudioBtn"
-                                class="clickable clickable-text filter-by-type audios-filter"
-                                onclick="onTypeFilterToggled(FILTER_AUDIOS, this);">Audios</div>
-                            <!-- text filter -->
-                            <div id="filterInputContainer" class="filter-input-container"> 
-                                <input id="filterInput"
-                                    class="filter-input"
-                                    type="text" 
-                                    placeholder="Search by title" 
-                                    onkeyup="onFilterByTextMatch(this.value);">
+                         <!-- top bar -->
+                        <div id="topBar" class="top-bar">
+                            <p class="clickable clickable-text default-margin top-bar-title" onclick="location.reload();">Streamed</p>
+
+                            <div id="searchbarContainer" class="default-margin searchbar-container">
+                                <!-- type filters -->
+                                <div id="filterByTypeMovieBtn" 
+                                    class="clickable clickable-text filter-by-type movies-filter" 
+                                    onclick="onTypeFilterToggled(FILTER_MOVIES, this);">Movies</div>
+                                <div id="filterByTypeSeriesBtn" 
+                                    class="clickable clickable-text filter-by-type series-filter"
+                                    onclick="onTypeFilterToggled(FILTER_SERIES, this);">Series</div>
+                                <div id="filterByTypeAudioBtn"
+                                    class="clickable clickable-text filter-by-type audios-filter"
+                                    onclick="onTypeFilterToggled(FILTER_AUDIOS, this);">Audios</div>
+                                <!-- text filter -->
+                                <div id="filterInputContainer" class="filter-input-container"> 
+                                    <input id="filterInput"
+                                        class="filter-input"
+                                        type="text" 
+                                        placeholder="Search by title" 
+                                        onkeyup="onFilterByTextMatch(this.value);">
+                                </div>
                             </div>
-                        </div>
 
                         
                         <div class="clickable default-margin color-mode-toggler" id="setColorMode" onclick="toggleColorMode();">
@@ -102,41 +105,41 @@
                     </div>
 
 
+                        <!-- Top pick -->
+                        <div id="topPick" class="top-pick-container">
+                            
+                            <!--pick1-->
+                            <div id="topPick1" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
+                                <div id="topPickFade1" class="top-pick-fade"></div>
 
-                    <!-- Top pick -->
-                    <div id="topPick" class="top-pick-container">
-                        
-                        <!--pick1-->
-                        <div id="topPick1" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
-                            <div id="topPickFade1" class="top-pick-fade"></div>
+                                <div class="top-pick-title-container">
+                                    <p id="topPickTitle1" class="top-pick-title"></p>
+                                </div>
 
-                            <div class="top-pick-title-container">
-                                <p id="topPickTitle1" class="top-pick-title"></p>
+                                <div class="top-pick-play">
+                                    <img id="topPickPlayMovie1" src="src/Play_Movie.svg">
+                                </div>
                             </div>
+                            
+                            <!--pick2-->
+                            <div id="topPick2" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
+                                <div id="topPickFade2" class="top-pick-fade"></div>
 
-                            <div class="top-pick-play">
-                                <img id="topPickPlayMovie1" src="src/Play_Movie.svg">
+                                <div class="top-pick-title-container">
+                                    <p id="topPickTitle2" class="top-pick-title"></p>
+                                </div>
+
+                                <div class="top-pick-play">
+                                    <img id="topPickPlayMovie2" src="src/Play_Movie.svg">
+                                </div>
                             </div>
                         </div>
-                        
-                        <!--pick2-->
-                        <div id="topPick2" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
-                            <div id="topPickFade2" class="top-pick-fade"></div>
+            
 
-                            <div class="top-pick-title-container">
-                                <p id="topPickTitle2" class="top-pick-title"></p>
-                            </div>
+                        <!-- Main panel for media listing -->
+                        <div id="mediaContainer" class="media-container"></div>
 
-                            <div class="top-pick-play">
-                                <img id="topPickPlayMovie2" src="src/Play_Movie.svg">
-                            </div>
-                        </div>
                     </div>
-        
-
-                    <!-- Main panel for media listing -->
-                    <div id="mediaContainer" class="media-container"></div>
-
                 </div>
 
             </div>
@@ -505,7 +508,8 @@
         let onTypeFilterToggled = function(type, srcElem) {
             // toogle filter type activity
             typeFilterBits ^= type;
-            srcElem.style.textDecoration = (typeFilterBits & type) === type ? "underline" : "none";
+            srcElem.style.fontWeight = (typeFilterBits & type) === type ? "normal" : "300";
+            srcElem.style.opacity = (typeFilterBits & type) === type ? "1" : "0.8";
 
 //            console.log(`type=${type}; typeFilterBits=${typeFilterBits}; typeFilterBits & type=${typeFilterBits & type}`);
 
