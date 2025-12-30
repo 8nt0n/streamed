@@ -15,17 +15,20 @@ input:focus {
 }
 
 body {
-    min-height: 100vh; /* 100% of the viewport height */
+    height: 100%; /* 100% of the viewport height */
     margin: 0;
     padding: 0;
-    background: content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189));
+    background-image: url(src/bg_v2.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
 
 
 .stylable-root-panel {
     width: auto;
-    height: 100%;
-    padding: 30px;
+    min-height: 100vh;
     font-family: Inter;
 }
 
@@ -58,16 +61,18 @@ body {
     font-weight: 300;
     opacity: 0.8;
     border-width: 0;
+    transition: all 0.15s;
 }
 
 .clickable:hover {
-    font-weight: 600;
     opacity: 1;
+    transition: all 0.15s;
 }
 
 
 .clickable-text {
     color: var(--default-color-light);
+    transition: all 0.15s;
 }
 
 
@@ -76,7 +81,7 @@ body {
     height: 30px;
     padding: 5px 5px 0 5px;
     border-radius: 100%;
-    text-align: center;
+    text-align: left;
     font-weight: bolder;
     color: var(--default-color-light);
     background-color: var(--default-color-dark);
@@ -262,22 +267,61 @@ body {
     color: var(--default-color-light);
 }
 
-.site-container{
-    min-width: 460px;
+.site-container {
+    min-width: calc(100vw - 60px);
+    height: calc(100vh - 60px);
     overflow-y: scroll;
     overflow-x: hidden;
-    padding: 15px;
     border-radius: 40px;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.077);
+    margin: 30px;
+
+    /* Glass */
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.25),
+            rgba(255, 255, 255, 0.05)
+        );
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+
+    /* Depth */
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.35),
+        0 20px 40px rgba(0,0,0,0.15);
+
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.site-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    /*for that frosty effect (looks super cool in darkmode btw btw)*/
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+
+    mix-blend-mode: overlay;
+    opacity: 0.15;
+}
+
+@keyframes noiseShift {
+    0% { background-position: 0 0; }
+    100% { background-position: 100px 100px; }
+}
+
+.site-container::after {
+    animation: noiseShift 6s steps(10) infinite;
 }
 
 
+
 .top-bar {
-    height: 100%; 
-    width: 100%; 
+    height: 70px; 
+    margin: 15px;
+    width: calc(100% - 30px);
     display: flex; 
     flex-wrap: wrap;
     align-items: center; 
@@ -425,26 +469,28 @@ input.filter-input:focus {
     position: relative;
     width: 200px;
     height: 320px;
-    background-color: var(--default-color-light);
+    background-color: transparent;
     transition: all 0.25s;  
     border-radius: 10px;
     text-decoration: none;
 }
 
 .media-item:hover {
+    box-shadow: rgba(0, 0, 0, 0.288) 0px 0px 2px;
     transition: all 0.25s;
 }
 
 .dark-color-mode .media-item {
-    background-color: var(--default-color-dark);    
+    background-color: transparent;    
 }
 
 .media-item > p {
+    margin: 0px;
+    margin-left: 5px;
     position: absolute;
     width: 100%;
     color: var(--default-color-dark);
-    text-align: center;
-    margin: 0px;
+    text-align: left;
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;

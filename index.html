@@ -26,7 +26,7 @@
 
     <body id="bodyElement" class="disable-scrollbars">
 
-        <div id="rootPanel" class="default-color-mode">
+        <div id="rootPanel" class="default-color-mode" style="min-height: 100vh; margin: 0px; padding: 0px;">
 
             <div class="stylable-root-panel">
 
@@ -89,7 +89,7 @@
                         </div>
 
                         
-                        <div class="clickable default-margin color-mode-toggler" onclick="toggleColorMode();">
+                        <div class="clickable default-margin color-mode-toggler" id="setColorMode" onclick="toggleColorMode();">
                             <div class="color-mode-set-default"></div>
                             <div class="color-mode-set-dark"></div>
                         </div>
@@ -172,11 +172,15 @@
         const playerTitle = document.getElementById("movieTitle");
         const playerDescription = document.getElementById("movieDescription");
         const seasonContainer = document.getElementById("seasonContainer");
+        const setColorMode = document.getElementById("setColorMode");
 
         const topPick = document.getElementById("topPick");
         const filterInputContainer = document.getElementById("filterInputContainer");
         const filterInputElem = document.getElementById("filterInput");
      
+        // rotation of setColorMode button
+        let setColorModeAngle = 0;
+
         // media player:
         const VOLUME_DFLT = 0.5;
         let volumeValue;        
@@ -205,7 +209,11 @@
         // other cars <<<<<<< dodge charger
 
 
+
+
         let toggleColorMode = function() {
+            setColorModeAngle += 180; // half rotation
+            setColorMode.style.transform = `rotate(${setColorModeAngle}deg)`;
             applyColorMode(
                 colorMode === COLOR_MODE_DARK ? COLOR_MODE_DFLT : COLOR_MODE_DARK,
                 true
@@ -216,9 +224,9 @@
             colorMode = colorModeClass;
             rootPanel.setAttribute("class", colorModeClass);
             if (colorModeClass === COLOR_MODE_DFLT) {
-                bodyElement.style.background = "content-box radial-gradient(rgb(121, 86, 93), rgb(101, 164, 189))";
+                bodyElement.style.backgroundImage = "url('src/bg_v2.png')";
             } else {
-                bodyElement.style.background = "content-box radial-gradient(rgb(42, 47, 50), rgb(14, 47, 59))";
+                bodyElement.style.backgroundImage = "url('src/bg_v2d.png')";
             }
 
             if (updateCookie) {
