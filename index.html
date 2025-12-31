@@ -336,13 +336,16 @@
                     episodesContainer.appendChild(seasonOption);
 
                     let episodeNum = 0;
-                    for (let episodeFile of summary.seasonEp[i]) {
+//                    for (let episodeFile of summary.seasonEp[i]) {
+                    for (let j = 0; j < summary.seasonEp[i].length; j++) {
+                        const episodeFile = summary.seasonEp[i][j];
+                        const episodeTitle = summary.episodeTitles[i][j];
                         const epNum = ++episodeNum; // must be a const for use in the click handler lambda below
                         let episodeOption = document.createElement("div");
                         episodeOption.setAttribute("style", "");
                         episodeOption.setAttribute("class", `clickable series-option episode-option ep-${seasonNum}-${epNum}`);
-//                        episodeOption.innerText = `(${episodeNum}) - ${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
-                        episodeOption.innerText = `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+//                      episodeOption.innerText = `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+                        episodeOption.innerText = episodeTitle !== "" ? episodeTitle : `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
                         episodeOption.addEventListener(
                             "click", 
                             () => prepareEpisode(summary, seasonNum, epNum, episodeFile)

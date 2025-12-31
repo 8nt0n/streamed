@@ -1,6 +1,7 @@
 from collections import Counter
 from pathlib import Path
 from PIL import Image
+from lib_tinytag import TinyTag
 
 import glob
 import importlib.util
@@ -40,7 +41,7 @@ def writeData(content, mediatype):
         file.write("            thumbColor: '")
         file.write(content["thumbColor"] + "',\n")
         
-        if mediatype == "movies":
+        if mediatype == cmn.MEDIA_TYPE_MOVIES:
             file.write("            file: '")
             file.write(content["file"] + "',\n")        
         
@@ -52,7 +53,7 @@ def writeData(content, mediatype):
 
             file.write("            description: '")
             file.write(content["description"] + "',\n\n")
-        elif mediatype == "series" or mediatype == "audios":
+        elif mediatype == cmn.MEDIA_TYPE_SERIES or mediatype == cmn.MEDIA_TYPE_AUDIOS:
             file.write("            seasons: '")
             file.write(content["Seasons"] + "',\n")
 
@@ -61,6 +62,9 @@ def writeData(content, mediatype):
 
             file.write("            seasonEp: ")
             file.write(content["SeasonEp"] + ",\n")
+
+            file.write("            episodeTitles: ")
+            file.write(content["EpisodeTitles"] + ",\n")
             
             file.write("            description: '")
             file.write(content["description"] + "',\n\n")
@@ -312,12 +316,15 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             seasonsCount = 0
             episodesCount = 0
             episodeFiles = []
+            episodeTitles = []
             
             videoFilePath = None
             for seasonDirName in cmn.orderedFileList(videoDirPath):
                 if seasonDirName != "meta":
                     seasonsCount += 1
-                    episodeVideoFiles = cmn.orderedFileList(os.path.join(videoDirPath, seasonDirName))
+                    episodeDir = os.path.join(videoDirPath, seasonDirName)
+                    episodeVideoFiles = cmn.orderedFileList(episodeDir)
+                    episodeTitles.append(titlesFromTags(episodeDir, episodeVideoFiles))
                     count = len(episodeVideoFiles)
                     episodesCount += count
                     episodeFiles.append(episodeVideoFiles)
@@ -328,6 +335,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             DATA["Seasons"] = str(seasonsCount)
             DATA["Episodes"] = str(episodesCount)
             DATA["SeasonEp"] = str(episodeFiles)
+            DATA["EpisodeTitles"] = str(episodeTitles)
             
             if videoFilePath != None:
                 mediaInfo = mediaInfoExtractor(videoFilePath)
@@ -340,7 +348,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
         DATA["mediatype"] = mediatype        
         DATA["id"] = str(count)
 
-        # looks if description exists  (obviously written by the one and only gpt as if i would write exceptions)
+        # looks if description exists
         try:
             descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt") # TODO: use constants
             descr = cmn.readTextFile(descrPath)
@@ -356,7 +364,19 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
         writeData(DATA, mediatype)
         count += 1
 
+
+def titlesFromTags(dirPath, mediaFiles):
+    episodeTitles = []
+    for mediaFile in mediaFiles:
+        filePath = os.path.join(dirPath, mediaFile)
+        if TinyTag.is_supported(filePath):
+            tag = TinyTag.get(filePath)
+            cmn.log(f' [DBG] tags from {filePath}: artist={tag.artist}, title={tag.title}, track number={tag.track}')
+            
+            episodeTitles.append(cmn.joinStrings([ tag.artist, tag.title ], " - "))
     
+    return episodeTitles
+            
 
 # imports moviepy if it's available, see https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported    
 # install with:
@@ -445,7 +465,7 @@ def initThumbnailSupplier():
         cmn.log(f"[INFO] using 'ffmpeg' command to extract thumbnail images")
         thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailFromFFMpeg(mediaFilePath, metaDirPath, mediaInfoMap)
     else:
-        cmn.log(f"[WARN] 'ffmpeg' not found, fralling back to simple SVG thumbnail generation")
+        cmn.log(f"[WARN] 'ffmpeg' not found, falling back to simple SVG thumbnail generation")
         thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailSvg(mediaFilePath, metaDirPath)
         
     return thumbnailSupplier        

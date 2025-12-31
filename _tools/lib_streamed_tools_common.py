@@ -137,7 +137,7 @@ def fileNameToTitle(path):
             result += substr[1:]
             
         result += " "
-    
+
     return result.strip()
 
 
@@ -163,3 +163,12 @@ def patternFromGlob(glob):
     except Exception as ex:
         log(f" [ERR] failed to compile GLOB '{glob}': {ex}")
         raise ex
+    
+
+def joinStrings(elements, sep = " "):
+    result = ""
+    for elem in elements:
+        if (elem != None and elem != ""):
+            result += (sep + str(elem)) if len(result) > 0 else str(elem)
+            
+    return result
