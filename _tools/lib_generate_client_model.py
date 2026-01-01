@@ -283,7 +283,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             DATA['length'] = UNKNOWN_VALUE
             DATA['resolution'] = UNKNOWN_VALUE            
             DATA['thumbnailFile'] = "dummy.jpg"
-            DATA['thumbColor'] = "#ffffff" # TODO: get the 'most common color' from the thumbnail image
+            DATA['thumbColor'] = "#ffffff" # 'most common color' of the thumbnail image
             mediaInfo = mediaInfoExtractor(videoFilePath)
             cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
     
@@ -336,6 +336,8 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
             DATA["Episodes"] = str(episodesCount)
             DATA["SeasonEp"] = str(episodeFiles)
             DATA["EpisodeTitles"] = str(episodeTitles)
+            DATA['thumbnailFile'] = "dummy.jpg"
+            DATA['thumbColor'] = "#ffffff" # 'most common color' of the thumbnail image
             
             if videoFilePath != None:
                 mediaInfo = mediaInfoExtractor(videoFilePath)
