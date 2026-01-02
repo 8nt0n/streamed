@@ -35,6 +35,7 @@ def printHelp(usageExamples):
         + f" [{ARG_SYMLINK}]"
         + f" [{ARG_INCL_GLOB} <include files glob>]"
         + f" [{ARG_EXCL_GLOB} <exclude files glob>]"
+        + f" [{cmn.ARG_POSTPONE_REFRESH}]"        
         + f" [{cmn.ARG_VERBOSE}]\n"
 
         + "This script adds a new collection of media files( e.g. episodes of a series or a music album) to the media repository.\n\n"
@@ -48,6 +49,7 @@ def printHelp(usageExamples):
         + f"{ARG_INCL_GLOB}           include only media files matching the provided GLOB (ignoring case) when processing the source media folder\n"
         + f"{ARG_EXCL_GLOB}           exclude all media files matching the provided GLOB (ignoring case) when processing the source media folder\n"
         + f"{ARG_SYMLINK}           create symlinks to the source media files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
+        + f"{cmn.ARG_POSTPONE_REFRESH}           postpone (i.e. don't start) the client model refresh after the media registration\n"
         + f"{cmn.ARG_VERBOSE}           enables a more verbose logging\n"
         + f"{cmn.ARG_HELP}, {cmn.ARG_HELP_LONG}   print usage information and exit\n"
     )

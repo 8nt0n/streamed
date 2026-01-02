@@ -8,6 +8,7 @@ import sys
 ARG_HELP = "-h"
 ARG_HELP_LONG = "--help"
 ARG_VERBOSE = "-v"
+ARG_POSTPONE_REFRESH = "-p"
 LOG_DBG = ARG_VERBOSE in sys.argv 
 DBG_MSG_PATTERN = re.compile("^\s*\[DBG\]\s")
 

@@ -7,8 +7,6 @@ import lib_streamed_tools_common as cmn
 import lib_generate_client_model as mdl
 import lib_register as reg
 
-ARG_HELP = "-h"
-ARG_HELP_LONG = "--help"
 ARG_SRC_FILE = "-s"
 ARG_SRC_FOLDER = "-f"
 ARG_MOVIE_NAME = "-n"
@@ -39,6 +37,7 @@ def printHelp():
         + f" [{ARG_INCL_GLOB} <include files glob>]"
         + f" [{ARG_EXCL_GLOB} <exclude files glob>]"
         + f" [{ARG_SYMLINK}]"
+        + f" [{cmn.ARG_POSTPONE_REFRESH}]"        
         + f" [{cmn.ARG_VERBOSE}]\n"
 
         + "This script adds new video files to the media repository.\n\n"
@@ -52,8 +51,9 @@ def printHelp():
         + f"{ARG_EXCL_GLOB}           exclude all video files matching the provided GLOB (ignoring case) when processing the source video folder\n"
         + f"{ARG_RECURSIVE}           include all subfolders when processing the source video folder - use with caution!\n"
         + f"{ARG_SYMLINK}           create symlinks to the source video files instead of copying them to the media repository (must be supported by the operating system) - use with caution!\n"
+        + f"{cmn.ARG_POSTPONE_REFRESH}           postpone (i.e. don't start) the client model refresh after the media registration\n"
         + f"{cmn.ARG_VERBOSE}           enables a more verbose logging\n"
-        + f"{ARG_HELP}, {ARG_HELP_LONG}   print usage information and exit\n"
+        + f"{cmn.ARG_HELP}, {cmn.ARG_HELP_LONG}   print usage information and exit\n"
     )
     
     print(
@@ -94,7 +94,7 @@ def registerFolder(dir, inclPattern, exclPattern, recursive, targetDir, createSy
 
 
 def main():
-    if cmn.hasSysArg(ARG_HELP) or cmn.hasSysArg(ARG_HELP_LONG):
+    if cmn.hasSysArg(cmn.ARG_HELP) or cmn.hasSysArg(cmn.ARG_HELP_LONG):
         printHelp()
         sys.exit(0)
     
@@ -142,9 +142,10 @@ def main():
         else:
             registerFolder(srcDir, cmn.patternFromGlob(inclGlob), cmn.patternFromGlob(exclGlob), recursive, targetDir, createSymlink)
             
-        # at last trigger client model refresh
-        cmn.log("[INFO] starting client model refresh")
-        mdl.refresh(False)
+        if not cmn.hasSysArg(cmn.ARG_POSTPONE_REFRESH):
+            # at last trigger client model refresh
+            cmn.log("[INFO] starting client model refresh")
+            mdl.refresh(False)
     except Exception as ex:
         cmn.log(f" [ERR] failed to register movie(s): {ex}")
         sys.exit(-1)

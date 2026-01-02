@@ -22,9 +22,10 @@ def main():
         # check command line arguments and do the registration
         rmc.checkAndRegister(cmn.MEDIA_TYPE_AUDIOS, USAGE_EXAMPLES)
             
-        # at last trigger client model refresh
-        cmn.log("[INFO] starting client model refresh")
-        mdl.refresh(False)
+        if not cmn.hasSysArg(cmn.ARG_POSTPONE_REFRESH):
+            # at last trigger client model refresh
+            cmn.log("[INFO] starting client model refresh")
+            mdl.refresh(False)
     except Exception as ex:    
         cmn.log(f" [ERR] failed to register episodes: {ex}")
         print(traceback.format_exc())
