@@ -346,21 +346,34 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                     DATA['thumbnailFile'] = thumbnailFile
                     DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
             
-        DATA["name"] = cmn.fileNameToTitle(subfolder)
-        DATA["mediatype"] = mediatype        
-        DATA["id"] = str(count)
+        DATA["name"] = cmn.fileNameToTitle(subfolder)        
+        titlePath = os.path.join(mediapath, subfolder, "meta", "title.txt") # TODO: use constants
+        try:
+            title = cmn.readTextFile(titlePath)
+            if title == "":
+                cmn.log(f"[WARN] no title text found in {titlePath}")
+            else:
+                cmn.log(f" [DBG] title text found in {titlePath}")
+                DATA["name"] = title.replace("'", "\"").replace("\n", " ").replace("  ", " ")
+        except FileNotFoundError:
+            cmn.log(f'[WARN] {titlePath} not found')
+
 
         # looks if description exists
+        descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt") # TODO: use constants
         try:
-            descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt") # TODO: use constants
             descr = cmn.readTextFile(descrPath)
             if descr == "":
                 cmn.log(f"[WARN] no description text found in {descrPath}")
                 DATA["description"] = ""
             else:
+                cmn.log(f" [DBG] description text found in {descrPath}")
                 DATA["description"] = descr.replace("'", "\"").replace("\n", " ").replace("  ", " ")
         except FileNotFoundError:
             cmn.log(f'[WARN] {descrPath} not found')
+            
+        DATA["mediatype"] = mediatype        
+        DATA["id"] = str(count)
             
         #write the gathered data to the actual data.js file
         writeData(DATA, mediatype)

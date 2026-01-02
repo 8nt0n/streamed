@@ -118,12 +118,19 @@ def register(mediaType, srcDir, targetDir, collectionNum, inclPattern, exclPatte
     if not os.path.isfile(descrFilePath):
         collectionDescr = collectionDescr or collectionName
         try:
-            with open(descrFilePath, "a") as file:
-                file.write(collectionDescr)
-            
+            cmn.writeTextFile(descrFilePath, collectionDescr)
             cmn.log(f" [DBG] description written to {descrFilePath}")
         except Exception as ex:
             cmn.log(f"[WARN] failed to write the description text file {descrFilePath}: {ex}")     
+            raise ex
+        
+    titleFilePath = os.path.join(metaFolder, "title.txt") # TODO: use constant
+    if not os.path.isfile(titleFilePath):
+        try:
+            cmn.writeTextFile(titleFilePath, collectionName)        
+            cmn.log(f" [DBG] title written to {titleFilePath}")
+        except Exception as ex:
+            cmn.log(f"[WARN] failed to write the title text file {titleFilePath}: {ex}")     
             raise ex
     
     if mediaType == cmn.MEDIA_TYPE_AUDIOS:
