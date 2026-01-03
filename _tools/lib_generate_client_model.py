@@ -354,7 +354,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 cmn.log(f"[WARN] no title text found in {titlePath}")
             else:
                 cmn.log(f" [DBG] title text found in {titlePath}")
-                DATA["name"] = title.replace("'", "\"").replace("\n", " ").replace("  ", " ")
+                DATA["name"] = title.replace("'", "\\'").replace("\n", " ").replace("  ", " ")
         except FileNotFoundError:
             cmn.log(f'[WARN] {titlePath} not found')
 
@@ -368,7 +368,7 @@ def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnai
                 DATA["description"] = ""
             else:
                 cmn.log(f" [DBG] description text found in {descrPath}")
-                DATA["description"] = descr.replace("'", "\"").replace("\n", " ").replace("  ", " ")
+                DATA["description"] = descr.replace("'", "\\'").replace("\n", " ").replace("  ", " ")
         except FileNotFoundError:
             cmn.log(f'[WARN] {descrPath} not found')
             
