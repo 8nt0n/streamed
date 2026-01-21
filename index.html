@@ -161,6 +161,7 @@
         // cookies:
         const COOKIE_COLOR_MODE = "colormode";
         const COOKIE_VOLUME = "volume";
+        const ONE_YEAR_SECONDS = 60*60*24*365;
 
         // color mode (style classes):
         const COLOR_MODE_DFLT = "default-color-mode";
@@ -238,7 +239,7 @@
         }
 
         let refreshCookie = function() {
-            document.cookie = `${COOKIE_COLOR_MODE}=${colorMode}`;
+            document.cookie = `${COOKIE_COLOR_MODE}=${colorMode}; max-age=${ONE_YEAR_SECONDS}`;
             document.cookie = `${COOKIE_VOLUME}=${volumeValue}`;
 //            console.log(`cookie refreshed: ${document.cookie}`);
         }
