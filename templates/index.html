@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>streamed</title>
+        
+        <meta charset="utf-8">
+        
+
+        <!--font-->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+        <link rel="icon" href="static/logo.png">
+
+        <!-- model -->
+        <script src="static/data.js"></script>
+
+        <style>
+            /* defines some color variables */
+            :root {
+            --default-color-light: rgb(223, 220, 220);
+            --default-color-dark: rgb(50, 56, 63);
+            }
+
+
+            * {
+                user-select: none; /* makes text unselectable */
+            }
+
+            input:focus {
+                outline: none; /* no special border marking of focused input elements */
+            }
+
+            body {
+                height: 100%; /* 100% of the viewport height */
+                margin: 0;
+                padding: 0;
+                background-image: url(static/bg_v2.png);
+                background-position: center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                overflow: hidden;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+            .stylable-root-panel {
+                width: auto;
+                min-height: 100vh;
+                font-family: Inter;
+            }
+
+
+            .disable-scrollbars *::-webkit-scrollbar {
+            background: transparent; /* Chrome/Safari/Webkit */
+            width: 0;
+            height: 0;
+            }
+                
+            .disable-scrollbars * {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE 10+ */
+            }
+
+
+
+            .fullsize-panel {
+                height: 100%; 
+                width: 100%;
+            }
+
+            .default-margin {
+                margin: 15px;
+            }
+
+
+            .clickable {
+                cursor: pointer;
+                font-weight: 300;
+                opacity: 0.8;
+                border-width: 0;
+                transition: all 0.15s;
+            }
+
+            .clickable:hover {
+                opacity: 1;
+                transition: all 0.15s;
+            }
+
+
+            .clickable-text {
+                color: var(--default-color-light);
+                transition: all 0.15s;
+            }
+
+
+            .clickable-text-div {
+                width: 30px; 
+                height: 30px;
+                padding: 5px 5px 0 5px;
+                border-radius: 100%;
+                text-align: left;
+                font-weight: bolder;
+                color: var(--default-color-light);
+                background-color: var(--default-color-dark);
+                font-family: Poppins;
+                font-weight: 800;
+            }
+
+
+            .close-player-button {
+                position: absolute; 
+                top: 12px; 
+                left: calc(100% - 56px); 
+            }
+
+            .close-player-button:hover {
+                border-color: lightgray;
+                color: white;
+            }
+
+
+            .video-details-container {
+                color: rgba( 255, 255, 255, 0.7 );
+                font-weight: 100;
+                display: flex; 
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+
+            .video-player-container {
+                background-color: transparent;
+            }
+
+            .media-player {
+                border-radius: 6px;
+                width: 100%;
+            }
+
+            .video-detail {
+                border-radius: 6px;
+                min-width: 400px;
+            }
+
+            .video-detail:nth-of-type(1) {
+                width: 50%;
+                flex-grow: 1;
+                flex-shrink: 1;
+            }
+
+            .video-detail:nth-of-type(2) {
+                max-width: 360px;
+                width: 30%;
+                flex-grow: 1;
+                flex-shrink: 1;
+            }
+
+            .video-detail:nth-of-type(3) {
+                flex-grow: 3;
+                flex-shrink: 3;
+            }
+
+
+            .season-container {
+                border-radius: 5px; 
+                max-height: 600px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start; 
+                justify-content: space-between; 
+            }
+
+            .episodes-container {
+                width: 100%;
+                max-height: 500px;
+                overflow: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between; 
+            }
+
+            .season-number-panel {
+                padding: 15px 10px;
+            }
+
+            .series-option {
+                width: 90%;
+                height: 35px;
+                padding: 5px;
+                margin: 5px 1px 1px 1px;
+                background-color: rgba(212, 210, 210, 0.5);
+                color: var(--default-color-dark);
+                font-family: Poppins;
+                font-weight: 400;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: left;
+                white-space: nowrap;
+                overflow-x: hidden;
+            }
+
+            .dark-color-mode .series-option {
+                background-color: var(--default-color-dark);
+                color: rgba(212, 210, 210, 0.5);
+            }
+
+            .series-option:first-child {
+                margin: 0 1px 1px 1px;
+                border-radius: 6px 6px 0 0;
+            }
+
+            .episode-option {
+                height: 20px;
+                border-top: 0;
+                border-radius: 0;
+                margin: 0 1px;
+            }
+
+            .episode-option:last-child {
+                border-radius: 0 0 6px 6px;
+            }
+
+            .season-thumbnail {
+                height: 100%;
+                min-width: 30px;
+            }
+
+
+            .player-panel {
+                min-width: calc(100vw - 120px);
+                height: calc(100vh - 120px);
+                overflow-y: scroll;
+                overflow-x: hidden;
+                border-radius: 40px;
+                margin: 60px;
+                padding: 0px 15px; /*only do padding left and right*/
+                align-self: center;
+
+                /* Glass */
+                background:
+                    linear-gradient(
+                        135deg,
+                        rgba(255, 255, 255, 0.25),
+                        rgba(255, 255, 255, 0.05)
+                    );
+                backdrop-filter: blur(24px) saturate(160%);
+                -webkit-backdrop-filter: blur(24px) saturate(160%);
+
+                /* Depth */
+                box-shadow:
+                    inset 0 1px 1px rgba(255,255,255,0.35),
+                    0 20px 40px rgba(0,0,0,0.15);
+
+                border: 1px solid rgba(255,255,255,0.2);
+                animation: fadeIn 0.5s ease 0s 1 normal forwards;
+                z-index: 999; 
+            }
+
+            .player-panel::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                pointer-events: none;
+
+                /*for that frosty effect (looks super cool in darkmode btw btw)*/
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+                background-attachment: fixed;
+
+                mix-blend-mode: overlay;
+                opacity: 0.15;
+            }
+
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.6);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .player-panel-hidden {
+                display: none;
+            }
+
+
+            .movie-title {
+                font-size: 2rem;
+                font-weight: 600;
+                color: var(--default-color-light);
+                text-shadow: 0px 0px 3px white;
+                text-align: center;
+            }
+
+            .movie-description {
+                font-size: 1.2rem;
+                font-weight: 300;
+                color: white;
+                text-align: left;
+            }
+
+            .dark-color-mode .movie-description {
+                color: var(--default-color-light);
+            }
+
+            .site-container {
+                min-width: calc(100vw - 120px);
+                height: calc(100vh - 120px);
+                overflow-y: hidden;
+                overflow-x: hidden;
+                border-radius: 40px;
+                margin: 60px;
+                padding: 0px 15px; /*only do padding left and right*/
+                align-self: center;
+
+                /* Glass */
+                background:
+                    linear-gradient(
+                        135deg,
+                        rgba(255, 255, 255, 0.25),
+                        rgba(255, 255, 255, 0.05)
+                    );
+                backdrop-filter: blur(24px) saturate(160%);
+                -webkit-backdrop-filter: blur(24px) saturate(160%);
+
+                /* Depth */
+                box-shadow:
+                    inset 0 1px 1px rgba(255,255,255,0.35),
+                    0 20px 40px rgba(0,0,0,0.15);
+
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+
+            .site-container::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                pointer-events: none;
+
+                /*for that frosty effect (looks super cool in darkmode btw btw)*/
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+                background-attachment: fixed;
+
+                mix-blend-mode: overlay;
+                opacity: 0.15;
+            }
+
+            @keyframes noiseShift {
+                0% { background-position: 0 0; }
+                100% { background-position: 100px 100px; }
+            }
+
+            .site-container::after {
+                animation: noiseShift 6s steps(10) infinite;
+            }
+
+
+
+            .top-bar {
+                height: 70px; 
+                margin: 15px;
+                width: calc(100% - 30px);
+                display: flex; 
+                flex-wrap: wrap;
+                align-items: center; 
+                justify-content: space-between;
+            }
+
+            .top-bar-title {
+                font-family: Poppins;
+                font-size: 2rem;
+                background-color: transparent;
+            }
+
+
+            .color-mode-toggler {
+                width: 22px;
+                height: 20px;
+                border: 1px solid var(--default-color-light);
+                border-radius: 100%;
+                overflow: hidden;
+                display: flex;
+            }
+
+            .color-mode-set-default {
+                width: 50%;
+                height: 100%;
+                background-color: var(--default-color-light);
+            }
+
+            .color-mode-set-dark {
+                width: 50%;
+                height: 100%;
+                background-color: var(--default-color-dark);
+            }
+
+
+            .searchbar-container {
+                position: relative;
+                border-radius: 1em;
+
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75em;
+                padding: 0.6em 0.9em;
+
+                background-color: #000e1c;
+                transition: all 0.25s;
+            }
+
+            .searchbar-container:hover,
+            .searchbar-container:focus-within {
+                backdrop-filter: blur(18px) saturate(160%);
+                transform: translateY(-1px);
+
+                box-shadow:
+                    inset 0 1px 1px rgba(255,255,255,0.5),
+                    0 10px 24px rgba(0,0,0,0.25);
+            }
+
+
+            .searchbar-container > .filter-by-type {
+                width: auto;
+                margin-right: 4px;
+                background-color: transparent;
+            }
+
+
+            .filter-input-container {
+                margin-left: 10px;
+            }
+
+            input.filter-input {
+                height: 2em;
+                padding: 0 10px;
+                border: 0px;
+                border-radius: 1em;
+                background-color: #1b2732;
+                color: var(--default-color-dark);
+            }
+
+            .dark-color-mode .filter-input {
+                color: var(--default-color-light);
+            }
+
+            input.filter-input:focus {
+                background-color: var(--default-color-light);
+                color: var(--default-color-dark);
+            }
+
+
+            .top-pick-container {
+                display: flex; 
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .top-pick {
+                height: 275px;
+                min-width: 400px;
+                display: flex; 
+                flex-direction: column;
+                align-items: flex-start; 
+                justify-content: space-between; 
+                overflow: hidden;
+                border-radius: 20px; 
+                background-repeat: no-repeat;
+                background-size: 45%;
+                background-position: right;
+            }
+
+            .top-pick:nth-of-type(1) {
+                width: 30%;
+                flex-grow: 2;
+                flex-shrink: 2;
+            }
+
+            .top-pick:nth-of-type(2) {
+                width: 50%;
+                flex-grow: 1;
+                flex-shrink: 1;
+            }
+
+            .top-pick-fade {
+                position: relative; 
+                min-height: 100%;
+                width: 100%
+            }
+
+            .top-pick-title-container {
+                position: relative;
+                top: -230px;
+                width: 50%;
+                min-height: 80%;
+                margin: 0 20px;
+                overflow: auto;
+                flex: 3;
+            }
+
+            .top-pick-title {
+                font-family: Poppins;
+                font-size: 2rem;
+                font-weight: 600;
+                text-align: left;
+                margin: 0;
+            }
+
+            .top-pick-play {
+                position: relative;
+                top: -280px;
+                margin: 0 20px;
+                flex: 1;
+            }
+
+
+            .media-container {
+                display: flex; 
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .media-item {
+                position: relative;
+                width: 200px;
+                height: 320px;
+                background-color: transparent;
+                transition: all 0.25s;  
+                border-radius: 10px;
+                text-decoration: none;
+            }
+
+            .media-item:hover {
+                box-shadow: rgba(0, 0, 0, 0.288) 0px 0px 4px;
+                transition: all 0.25s;
+            }
+
+            .dark-color-mode .media-item {
+                background-color: transparent;    
+            }
+
+            .media-item > p {
+                margin: 0px;
+                margin-left: 5px;
+                position: absolute;
+                width: 100%;
+                color: var(--default-color-dark);
+                text-align: left;
+                white-space: nowrap;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                font-family: poppins;
+            }
+
+            .dark-color-mode .media-item > p {
+                color: var(--default-color-light);
+            }
+
+            .listitem-thumbnail-panel {
+                height: 250px; 
+                width: 200px;
+                border-radius: 10px;
+                transition: all 0.25s;
+                background-color: rgba(14, 14, 14, 0.445);
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position-x: center;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+
+            .listitem-title-panel {
+                bottom: 26px;
+                left: 3px;
+                font-weight: 400;
+                font-size: 20px;
+            }
+
+            .listitem-details-panel {
+                bottom: 0px;
+                left: 3px;
+                font-weight: 200;
+                font-size: 15px;
+            }
+
+            .listitem-resolution-icon {
+                position: absolute;
+                bottom: 6px;
+                left: 3px;
+                z-index: 99;
+                width: 40px;
+            }
+
+        </style>
+    </head>
+
+
+
+    <body id="bodyElement" class="disable-scrollbars">
+
+        <div id="rootPanel" class="default-color-mode" style="min-height: 100vh; margin: 0px; padding: 0px; display: flex; align-items: center; justify-content: center;">
+
+            <div class="stylable-root-panel">
+
+                <div id="playerBg" class="player-panel-hidden">
+
+                    <div class="fullsize-panel">
+                        <div id="closePlayerBtn" 
+                            class="clickable clickable-text-div close-player-button" 
+                            onclick="hidePlayer();">
+                            <span>x</span>
+                        </div>
+                                                
+                        <div class="default-margin">
+                            <div id="movieTitle" class="movie-title"></div>
+                        </div>
+
+                        <div class="video-details-container">
+
+                            <div class="default-margin video-detail video-player-container">
+                                <video id="videoElement" class="media-player" controls></video>
+                                <audio id="audioElement" class="media-player" controls></audio>
+                            </div>
+
+                            <div id="seasonContainer" class="default-margin video-detail season-container"></div>
+
+                            <div id="descriptionDiv" class="default-margin video-detail">
+                                <div id="movieDescription" class="movie-description"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="siteContainer" class="site-container">
+
+                    <!-- inline styles are soooo back -->
+                    <div style="width: 100%; height: 100%; overflow: auto;">
+
+                         <!-- top bar -->
+                        <div id="topBar" class="top-bar">
+                            <p class="clickable clickable-text default-margin top-bar-title" onclick="location.reload();">Streamed</p>
+
+                            <div id="searchbarContainer" class="default-margin searchbar-container">
+                                <!-- type filters -->
+                                <div id="filterByTypeMovieBtn" 
+                                    class="clickable clickable-text filter-by-type movies-filter" 
+                                    onclick="onTypeFilterToggled(FILTER_MOVIES, this);">Movies</div>
+                                <div id="filterByTypeSeriesBtn" 
+                                    class="clickable clickable-text filter-by-type series-filter"
+                                    onclick="onTypeFilterToggled(FILTER_SERIES, this);">Series</div>
+                                <div id="filterByTypeAudioBtn"
+                                    class="clickable clickable-text filter-by-type audios-filter"
+                                    onclick="onTypeFilterToggled(FILTER_AUDIOS, this);">Audios</div>
+                                <!-- text filter -->
+                                <div id="filterInputContainer" class="filter-input-container"> 
+                                    <input id="filterInput"
+                                        class="filter-input"
+                                        type="text" 
+                                        placeholder="Search by title" 
+                                        onkeyup="onFilterByTextMatch(this.value);">
+                                </div>
+
+                                <button style="background-color: #1b2732; padding: 6px; border: 1px solid rgb(50, 56, 63); color: white; border-radius: 4px; cursor: pointer" onclick="window.location.href='/upload_movie'">+ Upload</button>
+                            </div>
+
+                        
+                        <div class="clickable default-margin color-mode-toggler" id="setColorMode" onclick="toggleColorMode();">
+                            <div class="color-mode-set-default"></div>
+                            <div class="color-mode-set-dark"></div>
+                        </div>
+
+                        <!--
+                        <div id="profile-wrapper" class="clickable" onclick="location.reload();">
+                            <img src="static/home.png" height="30">
+                        </div>
+                        -->
+                    </div>
+
+
+                        <!-- Top pick -->
+                        <div id="topPick" class="top-pick-container">
+                            
+                            <!--pick1-->
+                            <div id="topPick1" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie)">
+                                <div id="topPickFade1" class="top-pick-fade"></div>
+
+                                <div class="top-pick-title-container">
+                                    <p id="topPickTitle1" class="top-pick-title"></p>
+                                </div>
+
+                                <div class="top-pick-play">
+                                    <img id="topPickPlayMovie1" src="static/Play_Movie.svg">
+                                </div>
+                            </div>
+                            
+                            <!--pick2-->
+                            <div id="topPick2" class="clickable clickable-movie default-margin top-pick" onclick="spawnPlayer(randomMovie2)">
+                                <div id="topPickFade2" class="top-pick-fade"></div>
+
+                                <div class="top-pick-title-container">
+                                    <p id="topPickTitle2" class="top-pick-title"></p>
+                                </div>
+
+                                <div class="top-pick-play">
+                                    <img id="topPickPlayMovie2" src="static/Play_Movie.svg">
+                                </div>
+                            </div>
+                        </div>
+            
+
+                        <!-- Main panel for media listing -->
+                        <div id="mediaContainer" class="media-container"></div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </body>
+
+
+    <script>
+        // filtering:
+        const FILTER_NONE = 0;
+        const FILTER_MOVIES = 1;
+        const FILTER_SERIES = 2;
+        const FILTER_AUDIOS = 4;
+        let typeFilterBits = FILTER_NONE;
+        let searchText = "";
+
+        // cookies:
+        const COOKIE_COLOR_MODE = "colormode";
+        const COOKIE_VOLUME = "volume";
+        const ONE_YEAR_SECONDS = 60*60*24*365;
+
+        // color mode (style classes):
+        const COLOR_MODE_DFLT = "default-color-mode";
+        const COLOR_MODE_DARK = "dark-color-mode";
+        let colorMode;
+        
+        // some HTML elements:
+        const bodyElement = document.getElementById("bodyElement");
+        const rootPanel = document.getElementById("rootPanel")
+        const siteContainer = document.getElementById("siteContainer");
+        const playerBg = document.getElementById("playerBg");
+        const playerTitle = document.getElementById("movieTitle");
+        const playerDescription = document.getElementById("movieDescription");
+        const seasonContainer = document.getElementById("seasonContainer");
+        const setColorMode = document.getElementById("setColorMode");
+
+        const topPick = document.getElementById("topPick");
+        const filterInputContainer = document.getElementById("filterInputContainer");
+        const filterInputElem = document.getElementById("filterInput");
+     
+        // rotation of setColorMode button
+        let setColorModeAngle = 0;
+
+        // media player:
+        const VOLUME_DFLT = 0.5;
+        let volumeValue;        
+        let player;
+        let repeatingPlay = false; // re-start at the beginning after having finished playback, for now fix 'off'
+
+        // randomly selected movies for the 'top pick':
+        let randomMovie;
+        let randomMovie2;
+
+        
+        /*
+                 _______________
+              //~~~~~~~~~~~~~~~\\  |
+         0  / /_________________\ \| 0
+          ---------------------------
+        / /======|=D=O=D=G=E=|======\ \
+        \_____________________________/
+        \    _______       _______    /
+        |\ _/|__|__|\_____/|__|__|\_ /|
+        |      |`V'  `---'  `V'|      |
+        |______|               |______|
+       
+        */
+
+        // other cars <<<<<<< dodge charger
+
+
+
+
+        let toggleColorMode = function() {
+            setColorModeAngle += 180; // half rotation
+            setColorMode.style.transform = `rotate(${setColorModeAngle}deg)`;
+            applyColorMode(
+                colorMode === COLOR_MODE_DARK ? COLOR_MODE_DFLT : COLOR_MODE_DARK,
+                true
+            );
+        }
+        
+        let applyColorMode = function(colorModeClass, updateCookie) {
+            colorMode = colorModeClass;
+            rootPanel.setAttribute("class", colorModeClass);
+            if (colorModeClass === COLOR_MODE_DFLT) {
+                bodyElement.style.backgroundImage = "url('static/bg_v2.png')";
+            } else {
+                bodyElement.style.backgroundImage = "url('static/bg_v2d.png')";
+            }
+
+            if (updateCookie) {
+                refreshCookie();
+            }
+        }
+
+        let refreshCookie = function() {
+            document.cookie = `${COOKIE_COLOR_MODE}=${colorMode}; max-age=${ONE_YEAR_SECONDS}`;
+            document.cookie = `${COOKIE_VOLUME}=${volumeValue}`;
+//            console.log(`cookie refreshed: ${document.cookie}`);
+        }
+
+        let cookieValue = function(cookieName, fallbackValue) {
+            let keyFValuePair = document.cookie
+                .split(/; ?/)
+                .find((kv) => kv.startsWith(`${cookieName}=`));
+
+            const retVal = keyFValuePair ? keyFValuePair.split("=")[1] : fallbackValue;
+//            console.log(`delivering '${cookieName}' cookie value: ${retVal} (${typeof retVal})`);
+            return retVal;
+        }
+
+        
+        let initTopPick = function(movieObj, topPickNum) {
+            //console.log(`initializing top pick ${topPickNum}: '${movieObj.title}'...`);
+
+            let topPickElem = document.getElementById("topPick" + topPickNum);
+            topPickElem.style = `background-image: url('static/media/${movieObj.type}/${movieObj.path}/meta/${movieObj.thumbnailFile}'); background-color: ${movieObj.thumbColor};`;
+
+            let topPickTitle = document.getElementById("topPickTitle" + topPickNum);
+            topPickTitle.innerText = movieObj.title
+            if (isColorCloseToWhite(movieObj.thumbColor)) {
+                topPickTitle.style.color = "black";
+                document.getElementById("topPickPlayMovie" + topPickNum).src = "static/Play_Movie_dark.svg";
+            } else {
+                topPickTitle.style.color = "white";
+            }
+
+            let topPickFade = document.getElementById("topPickFade" + topPickNum);
+            topPickFade.style = `background: linear-gradient(to right, ${movieObj.thumbColor} 0%, ${movieObj.thumbColor} 55%, #ffffff00 100%);`;
+        }
+          
+
+        let chooseTopPick = function(Movies) {
+            // Top Picks
+            initTopPick(randomMovie, 1);
+            initTopPick(randomMovie2, 2);
+        }
+
+
+        let spawnPlayer = function(summary) {
+            siteContainer.style.display = "none"
+            playerBg.setAttribute('class', 'player-panel');
+
+            playerTitle.innerHTML = summary.title;
+            playerDescription.innerHTML = summary.description;
+            
+            let videoPlayer = document.getElementById("videoElement");
+            let audioPlayer = document.getElementById("audioElement");
+            if (summary.type === "audios") {
+                player = audioPlayer;
+                videoPlayer.style.display = "none";
+                audioPlayer.style.display = "inline-block";
+            } else {
+                player = videoPlayer;
+                videoPlayer.style.display = "inline-block";
+                audioPlayer.style.display = "none";
+            }
+
+            player.onvolumechange = () => {
+                volumeValue = player.volume;
+//                console.log(`handled volume change - volumeValue=${volumeValue}`);
+                refreshCookie();
+            }
+
+            if (summary.type === "movies") {
+                seasonContainer.style.display = "none";                
+                player.src = 'static/media/' + summary.type + '/' + summary.path + '/' + summary.file;
+            } else if (summary.type === "series" || summary.type === "audios") {
+                seasonContainer.style.display = "flex"
+                
+                // single selection element containing all of the episodes of all of the seasons:
+                let episodesContainer = document.createElement("div");
+                episodesContainer.setAttribute("class", "episodes-container");
+
+                const isAudio = summary.type === "audios";
+                for (let i = 0; i < summary.seasons; i++) {
+                    let seasonOption = document.createElement("div");
+                    seasonOption.setAttribute("class", "series-option");
+                    let seasonNum = i + 1;
+                    // let cover = document.createElement("img");
+                    // cover.src = `media/${summary.type}/${summary.path}/meta/${seasonNum}.jpg`
+                    // cover.setAttribute("id", seasonNum)
+                    // cover.setAttribute("alt", seasonNum);
+                    // cover.setAttribute("class", "season-thumbnail");
+                    // seasonOption.appendChild(cover);
+
+                    let seasonNumText = document.createElement("div");
+                    seasonNumText.setAttribute("class", "season-number-panel");
+                    seasonNumText.innerText = isAudio ? `Audio collection${summary.seasons > 1 ? (' ' + seasonNum) : ''}` : `Season ${seasonNum}`;
+                    seasonOption.appendChild(seasonNumText);
+
+                    episodesContainer.appendChild(seasonOption);
+
+                    let episodeNum = 0;
+//                    for (let episodeFile of summary.seasonEp[i]) {
+                    for (let j = 0; j < summary.seasonEp[i].length; j++) {
+                        const episodeFile = summary.seasonEp[i][j];
+                        const episodeTitle = summary.episodeTitles[i][j];
+                        const epNum = ++episodeNum; // must be a const for use in the click handler lambda below
+                        let episodeOption = document.createElement("div");
+                        episodeOption.setAttribute("style", "");
+                        episodeOption.setAttribute("class", `clickable series-option episode-option ep-${seasonNum}-${epNum}`);
+//                      episodeOption.innerText = `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+                        episodeOption.innerText = episodeTitle !== "" ? episodeTitle : `${episodeFile.replaceAll(/(\.[^.]+$|[_.-]+)/g, " ").replaceAll(/\s{2,}/g, " ")}`;
+                        episodeOption.addEventListener(
+                            "click", 
+                            () => prepareEpisode(summary, seasonNum, epNum, episodeFile)
+                        );
+                        episodesContainer.appendChild(episodeOption);
+                    }
+                }                
+                seasonContainer.appendChild(episodesContainer);
+
+                prepareEpisode(summary, 1, 1, summary.seasonEp[0][0]);
+            }
+            
+            player.volume = volumeValue;
+        }
+
+        let prepareEpisode = function(seriesSummary, seasonNum, episodeNum, episodeFile) {
+//            console.log(`prepareEpisode(summary, ${seasonNum}, ${episodeNum}, '${episodeFile}')` )
+
+            playerTitle.innerHTML = seriesSummary.title + " - " + seasonNum + "/" + episodeNum;
+            document.querySelectorAll(".episode-option").forEach((div) => div.style = "");
+            document.querySelector(`.episode-option.ep-${seasonNum}-${episodeNum}`).style = "font-weight: 600; opacity: 1;"
+            player.src = `static/media/${seriesSummary.type}/${seriesSummary.path}/${seasonNum}/${episodeFile}`;
+
+
+            // prepare the next episode/track for continuous play:
+            let nextSeasonNum = seasonNum;
+            let nextEpNum = episodeNum + 1;
+            let nextEpFile;
+            if (seriesSummary.seasonEp[nextSeasonNum - 1].length >= nextEpNum) {
+                // same saeson, next episode
+                nextEpFile = seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1];
+            } else {
+                nextSeasonNum++;
+                nextEpNum = 1;
+                if (seriesSummary.seasonEp.length >= nextSeasonNum && seriesSummary.seasonEp[nextSeasonNum - 1].length >= nextEpNum) {
+                    // next saeson, first episode
+                    nextEpFile = seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1];
+                } else {
+                    // first saeson, first episode (but only play if the 'repeatingPlay' flag is set)
+                    nextSeasonNum = 1;
+                    nextEpNum = 1;
+                    nextEpFile = repeatingPlay ? seriesSummary.seasonEp[nextSeasonNum - 1][nextEpNum - 1] : null;
+                }
+            }
+
+            if (nextEpFile) {
+                player.onended = function() {
+                    try {
+                        prepareEpisode(seriesSummary, nextSeasonNum, nextEpNum, nextEpFile);
+                        player.play();
+                    } catch (ex) {
+                        console.log(ex);
+                    }
+                }
+            } else {
+                player.onended = undefined;
+            }
+        }
+
+
+        let hidePlayer = function() {
+            if (!player) return;
+
+            siteContainer.style.display = "grid"
+            player.pause()
+            playerBg.setAttribute("class", "player-panel-hidden");
+            player.style.display = "inline-block";
+            seasonContainer.innerHTML = "";
+        }        
+          
+
+        let createDiv = function(summary) {
+            // parent div            
+            let mediaListElem = document.createElement("div");
+            mediaListElem.setAttribute('class', `clickable clickable-movie default-margin media-item ${summary.type} ${summary.path}`); // note: 'type' and 'path' is used for filtering
+            mediaListElem.setAttribute('onclick', `spawnPlayer(${JSON.stringify(summary)})`);
+
+            // thumbnail div
+            const thumbnailPath = "static/media/" + summary.type + "/" + summary.path + "/meta/" + summary.thumbnailFile;
+            let mediaThumbnailElem = document.createElement("div");
+            mediaThumbnailElem.setAttribute("class", "listitem-thumbnail-panel");
+            mediaThumbnailElem.setAttribute("style", `background-image: url('${thumbnailPath}');`);
+            mediaListElem.appendChild(mediaThumbnailElem);
+
+            // title paragraph
+            let mediaTitleElem = document.createElement("p");
+            mediaTitleElem.setAttribute("class", "listitem-title-panel");
+            mediaTitleElem.innerText = summary.title;
+            mediaListElem.appendChild(mediaTitleElem);
+
+
+            // details
+            let mediaDetailsElem = document.createElement("p");
+            mediaDetailsElem.setAttribute("class", "listitem-details-panel");
+            if (summary.type === "series" || summary.type === "audios") {
+                // number of seasons and total episodes count
+//                console.log(`adding ${summary.title} to the media overview...`);
+                mediaDetailsElem.innerText = `${summary.seasons} Season${(summary.seasons === "1" ? "" : "s")} | ${summary.episodes} Episodes`;
+            } else if (summary.type === "movies") {
+                // movie length and resolution
+                mediaDetailsElem.innerText = `${summary.resolution} | ${summary.length}`;
+
+                // resolution icon
+                let videoResolution = getVideoResolution(summary.resolution);
+//                console.log(`${summary.resolution} >>> ${videoResolution}`);
+
+                if (videoResolution !== "Unknown Resolution") {
+                    let resolutionIconElem = document.createElement("img");
+                    resolutionIconElem.src = `static/${videoResolution}.png`;
+                    resolutionIconElem.setAttribute("class", "listitem-resolution-icon");
+                    mediaThumbnailElem.appendChild(resolutionIconElem);
+                }
+            }
+            mediaListElem.appendChild(mediaDetailsElem);
+
+            document.getElementById('mediaContainer').appendChild(mediaListElem);
+        }
+
+
+        let loaded = function() {
+//            console.log('loaded');
+
+            for (let i = 0; i < Movies.length; i++) {
+                createDiv(Movies[i]);
+            }
+
+            for (let i = 0; i < Series.length; i++){
+                createDiv(Series[i]);
+            }
+
+            for (let i = 0; i < Audios.length; i++){
+                createDiv(Audios[i]);
+            }
+
+            if (Movies.length > 1) {
+                do {
+                    randomMovie = Movies[Math.floor(Math.random() * Movies.length)];
+                    randomMovie2 = Movies[Math.floor(Math.random() * Movies.length)];
+                } while (randomMovie === randomMovie2);
+            } else {
+                randomMovie = Movies[0];
+                randomMovie2 = Movies[0];
+            }
+            chooseTopPick(Movies);
+
+            // apply cookie values (if present)
+            colorMode = cookieValue(COOKIE_COLOR_MODE, COLOR_MODE_DFLT);
+            applyColorMode(colorMode, false);
+            volumeValue = parseFloat(cookieValue(COOKIE_VOLUME, VOLUME_DFLT));
+            if (isNaN(volumeValue)) {
+                volumeValue = VOLUME_DFLT;
+                refreshCookie();
+            }
+
+            document.addEventListener(
+                "keydown", 
+                (evt) => { if (evt.key === 'Escape' || evt.key === 'Esc') hidePlayer(); }
+            );
+        }
+        
+
+        
+        let onTypeFilterToggled = function(type, srcElem) {
+            // toogle filter type activity
+            typeFilterBits ^= type;
+            srcElem.style.fontWeight = (typeFilterBits & type) === type ? "normal" : "300";
+            srcElem.style.opacity = (typeFilterBits & type) === type ? "1" : "0.8";
+
+//            console.log(`type=${type}; typeFilterBits=${typeFilterBits}; typeFilterBits & type=${typeFilterBits & type}`);
+
+            filterMedia();
+        }
+
+        let onFilterByTextMatch = function(value) {
+//            console.log(`filtering by text value '${value}'...`);
+            searchText = value;
+
+            filterMedia();
+        }
+
+        let filterMedia = function() {
+            resetFilter();
+
+            if (typeFilterBits !== FILTER_NONE) {
+                let hideBits = ~typeFilterBits;
+
+//                console.log(`typeFilterBits=${dec2bin(typeFilterBits).toString(2)}\n      hideBits=${dec2bin(hideBits).toString(2)}`);
+
+                if ((hideBits & FILTER_MOVIES) === FILTER_MOVIES) {
+                    for (let movie of document.querySelectorAll(".movies")) {
+                        movie.style.display = "none";
+                    }
+                }
+                if ((hideBits & FILTER_SERIES) === FILTER_SERIES) {
+                    for (let series of document.querySelectorAll(".series")) {
+                        series.style.display = "none";
+                    }
+                }
+                if ((hideBits & FILTER_AUDIOS) === FILTER_AUDIOS) {
+                    for (let audio of document.querySelectorAll(".audios")) {
+                        audio.style.display = "none";
+                    }
+                }
+            }
+
+            if (searchText.length === 0) {
+                return;
+            }
+
+            const lowValue = searchText.toLowerCase();
+            filterTitles(Movies, lowValue);
+            filterTitles(Series, lowValue);
+            filterTitles(Audios, lowValue);
+        }
+
+        let filterTitles = function(mediaList, lowerSearchText) {
+            let mediaItems = mediaList || [];
+            for (let mediaItem of mediaItems) {
+                if (mediaItem.title.toLowerCase().indexOf(lowerSearchText) === -1) {
+                    document.querySelector("." + mediaItem.path).style.display = "none";
+                }
+            }
+        }
+        
+        let resetFilter = function() {
+            for (let mediaItem of document.querySelectorAll(".media-item")) {
+                mediaItem.style.display = "block";
+            }
+        }
+
+
+        ///////////////////////////////////////////////////
+        // utils:
+        let isColorCloseToWhite = function (hex) {
+            hex = hex.replace(/^#/, "");
+            if (hex.length === 3) {
+              hex = hex.split("").map(c => c + c).join("");
+            }
+            if (hex.length !== 6) return false;
+          
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+          
+            const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+            return brightness > 220;
+        }      
+
+        let getVideoResolution = function(resolutionString) {
+            if (resolutionString == "[n/a]") {
+                return 'Unknown Resolution';
+            }
+
+            // Extract numbers from input like "1920x1080", "1280x720 px", etc.
+            const match = resolutionString.match(/(\d+)\s*x\s*(\d+)/i);
+            if (!match) return 'Unknown Resolution'; // = Invalid input
+          
+            let width = parseInt(match[1], 10);
+            let height = parseInt(match[2], 10);
+          
+            // Normalize for landscape orientation
+            const w = Math.max(width, height);
+            const h = Math.min(width, height);
+          
+            // aint nobody hoarding 16k 40tb .mp4 files bro
+            if (h >= 4300) return 'res_8k'; 
+            if (h >= 2100) return 'res_4k';
+            if (h >= 1400) return 'res_1440p';
+            if (h >= 1000) return 'res_1080p';
+            if (h >= 700) return 'res_720p';
+            if (h < 700) return 'Unknown Resolution';
+          
+            return 'Unknown Resolution';
+        } 
+
+        let dec2bin = function(dec) {
+            return (dec >>> 0).toString(2);
+        }
+
+
+        ///////////////////////////////////////////////////
+        // start rendering UI:
+        addEventListener("load", () => loaded());
+
+    </script>
+
+
+</html>

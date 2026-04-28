@@ -1,0 +1,16 @@
+<h1>Add metadata</h1>
+
+<form action="/upload_movie" method="post" enctype="multipart/form-data"> <!--enctype is because of like uploading .mp4-->
+    
+    <input autocomplete="off" name="moviename" placeholder="Name" type="text"> <br>
+    <input autocomplete="off" name="description" placeholder="Description" type="text">
+    <br>
+    <label>Movie File (.mp4)</label>
+    <input type="file" name="movie_file" accept=".mp4">
+
+    <label>Poster Image (.png)</label>
+    <input type="file" name="poster_file" accept=".png">
+    
+    <button style="margin-top: 15px;" type="submit">Register</button>
+</form>
+

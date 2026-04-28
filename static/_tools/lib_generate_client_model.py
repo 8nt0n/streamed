@@ -1,0 +1,516 @@
+from collections import Counter
+from pathlib import Path
+from PIL import Image
+from lib_tinytag import TinyTag
+
+import glob
+import importlib.util
+import io
+import json
+import os
+import subprocess
+import sys
+import uuid
+
+import lib_streamed_tools_common as cmn
+
+DATA_FILE_PATH = os.path.join("static/data.js")
+TEMP_FILE_PATH = os.path.join("..", "data_" + uuid.uuid4().hex + ".tmp")
+UNKNOWN_VALUE = "[n/a]"
+
+
+def clearTempData():
+    for tmpFile in glob.glob(os.path.join("..", "data_*.tmp")):
+        cmn.deleteFile(tmpFile)
+            
+
+# TODO: generally buffer output
+def writeData(content, mediatype):
+
+    cmn.log(f"[INFO] '{content['name']}': writing model data of type '{mediatype}' under '{content['path']}'...")
+
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
+        file.write("        {\n")
+        
+        file.write("            title: '")
+        file.write(content["name"] + "',\n")
+            
+        file.write("            path: '")
+        file.write(content["path"] + "',\n")
+        
+        file.write("            thumbColor: '")
+        file.write(content["thumbColor"] + "',\n")
+        
+        if mediatype == cmn.MEDIA_TYPE_MOVIES:
+            file.write("            file: '")
+            file.write(content["file"] + "',\n")        
+        
+            file.write("            length: '")
+            file.write(content["length"] + "',\n")
+
+            file.write("            resolution: '")
+            file.write(content["resolution"] + "',\n")
+
+            file.write("            description: '")
+            file.write(content["description"] + "',\n\n")
+        elif mediatype == cmn.MEDIA_TYPE_SERIES or mediatype == cmn.MEDIA_TYPE_AUDIOS:
+            file.write("            seasons: '")
+            file.write(content["Seasons"] + "',\n")
+
+            file.write("            episodes: '")
+            file.write(content["Episodes"] + "',\n")
+
+            file.write("            seasonEp: ")
+            file.write(content["SeasonEp"] + ",\n")
+
+            file.write("            episodeTitles: ")
+            file.write(content["EpisodeTitles"] + ",\n")
+            
+            file.write("            description: '")
+            file.write(content["description"] + "',\n\n")
+
+
+        file.write("            type: '")
+        file.write(content["mediatype"] + "',\n")
+
+        file.write("            id: '")
+        file.write(content["id"] + "',\n")
+        
+        file.write("            thumbnailFile: '")
+        file.write(content["thumbnailFile"] + "',\n")        
+
+        file.write("        },\n")
+
+
+#always stays the same dummy
+def writeHeader(name, type):
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
+        if type == "start":
+            file.write("{\n")
+
+        file.write("    var " + name + " = [\n")
+
+def writeFooter(type):
+    with io.open(TEMP_FILE_PATH, 'a', encoding='utf8') as file:
+            file.write("    ]\n\n")
+            if type != "List":
+                file.write("}")
+
+
+def infoMapFromMoviepy(mediaFilePath, moviepyModule):
+    infoMap = {}
+    try:
+        with moviepyModule.VideoFileClip(mediaFilePath) as video:
+            infoMap['Duration'] = int(video.duration) # returns a value in seconds
+            infoMap['Width'] = video.size[0]
+            infoMap['Height'] = video.size[1]
+    except Exception as ex:
+        cmn.log(f' [ERR] failed to examine {mediaFilePath}: {ex}')
+        
+    return infoMap
+
+
+def infoMapFromFFProbe(mediaFilePath):
+    infoMap = {}
+    infoType = "video" # the key to retrieve the video information from the JSON output of the 'ffprobe' command
+    try:
+        complProc = subprocess.run(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', mediaFilePath], capture_output = True)
+        jsonMediaObj = json.loads(complProc.stdout)
+
+        infoSections = jsonMediaObj['streams']
+        for infos in infoSections:
+            if infos['codec_type'] == infoType:
+                cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+                infoMap['Duration'] = round(float(infos['duration'])) # returns a float value in seconds
+                infoMap['Width'] = infos['width']
+                infoMap['Height'] = infos['height']
+                break
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to run 'ffprobe' (not installed or not in PATH): {ex}")
+
+    return infoMap
+
+    
+def infoMapFromMediainfo(mediaFilePath):
+    infoType = "Video" # the key to retrieve the video information from the JSON output of the 'mediainfo' command
+    try:
+        complProc = subprocess.run(['mediainfo', '--Output=JSON', mediaFilePath, '/dev/null'], capture_output = True)
+        jsonMediaObj = json.loads(complProc.stdout)
+
+        infoSections = jsonMediaObj[0]['media']['track']
+        for infos in infoSections:
+            if infos['@type'] == infoType:
+                cmn.log(f" [DBG] found '{infoType}' section in media info for {mediaFilePath}")
+                return infos
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to run 'mediainfo' (not installed or not in PATH): {ex}")
+
+    cmn.log(f' [ERR] failed to examine {mediaFilePath}, couldn\'t find \'{infoType}\' section in media info')
+    return {}
+
+
+def thumbnail(videoFilePath, metaDirPath, mediaInfoMap, thumbnailSupplier, forceThumbnailReCreation):
+    # # (temporar) shortcut for handling well known thumbnail file names:
+    # for wellknownThumbNailName in ["thumbnail.jpg", "0.jpg"]:
+    #     if cmn.isImageFile(os.path.join(metaDirPath, wellknownThumbNailName)):
+    #         cmn.log(f" [DBG] found (well known) thumbnail file {wellknownThumbNailName}")
+    #         return wellknownThumbNailName
+        
+    for file in os.listdir(metaDirPath):
+        imgFilePath = os.path.join(metaDirPath, file)
+        if cmn.isImageFile(imgFilePath):
+            cmn.log(f" [DBG] found thumbnail file {file}")
+            if forceThumbnailReCreation:
+                cmn.deleteFile(imgFilePath)
+            else:
+                return file
+        else:
+            cmn.log(f" [DBG] ignoring {imgFilePath} (not a thumbnail file)")
+    
+    try:
+        #raise RuntimeError("test")
+        file = thumbnailSupplier(videoFilePath, metaDirPath, mediaInfoMap)
+        cmn.log(f"[INFO] created thumbnail file {file}")
+        return file
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to extract thumbnail file from '{videoFilePath}': {ex} - falling back to SVG...")
+        return thumbnailSvg(videoFilePath, metaDirPath)
+    
+    
+def thumbnailSvg(videoFilePath, metaDirPath):
+    videoDirPath = Path(videoFilePath).parent
+    title = cmn.fileNameToTitle(cmn.parentDirOf(metaDirPath))
+    words = title.split()
+    lines = []
+    tmpLine = ""
+    for word in words:
+        if len(tmpLine) + len(word) + 1 >= 12:
+            lines.append(tmpLine)
+            tmpLine = word
+        else:
+            tmpLine += (" " + word)
+
+    if len(tmpLine) != 0:
+        lines.append(tmpLine)
+    
+    svgContent = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
+    <svg viewBox="0 0 150 270"
+        xmlns="http://www.w3.org/2000/svg"
+        version="1.1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xml:lang="de"
+        font-size="20"
+        font-family="sans-serif"
+        stroke="#eee">
+      <title>{title}</title>
+      <g>
+        <text x="0" y="0">'''
+
+    lineNum = 1
+    for line in lines:
+        svgContent += f'''    <tspan x="50%" y="{1.2 * lineNum}em" textLength="100%" lengthAdjust="spacingAndGlyphs" text-anchor="middle">{line}</tspan>'''
+        lineNum += 1
+
+    svgContent += f'''</text>
+      </g>
+    </svg>'''
+
+    thumbnailFile = "thumbnail.svg"
+    thumbnailPath = os.path.join(metaDirPath, thumbnailFile)
+    cmn.writeTextFile(thumbnailPath, svgContent)
+
+    cmn.log(f"[INFO] created thumbnail file {thumbnailPath}")
+    return thumbnailFile
+
+
+# see e.g. https://www.baeldung.com/linux/ffmpeg-extract-video-frames#extracting-a-single-frame
+def thumbnailFromFFMpeg(videoFilePath, metaDirPath, mediaInfoMap):
+    thumbnailFile = "thumbnail.jpeg"
+    atSecond = str(round(float(mediaInfoMap["Duration"]) / 10))
+    # https://ffmpeg.run/posts/how-to-extract-image-frame-from-video-ffmpeg: "Placing the -ss parameter before the -i flag tells FFmpeg to use a much faster seeking method based on keyframes."
+    complProc = subprocess.run(['ffmpeg', '-ss', atSecond, '-i', videoFilePath, '-vframes', '1', '-q:v', '5', '-s', '220x150', '-v', 'quiet', os.path.join(metaDirPath, thumbnailFile)], capture_output = False)
+    return thumbnailFile
+
+
+def thumbnailBackColor(thumbnailFile):
+    try:
+        img = Image.open(thumbnailFile).convert("RGB")
+        backColorTupel = Counter(img.getdata()).most_common(1)[0][0]
+        hexColorStr = f"#{backColorTupel[0]:0{2}x}{backColorTupel[1]:0{2}x}{backColorTupel[2]:0{2}x}"
+        cmn.log(f" [DBG] extracted {hexColorStr} '{backColorTupel}' as the 'most common color' from thumbnail file '{thumbnailFile}'")
+        return hexColorStr
+    except Exception as ex:
+        cmn.log(f" [ERR] failed to extract the 'most common color' from thumbnail file '{thumbnailFile}': {ex} - falling back to #000000...")
+        return "#000000"
+        
+
+def findVideoFile(videoDirPath):
+    for file in os.listdir(videoDirPath):
+        videoFilePath = os.path.join(videoDirPath, file)
+#        cmn.log(f" [DBG] checking {videoFilePath}...")
+        if not cmn.isVideoFile(videoFilePath):
+            cmn.log(f" [DBG] ignoring {videoFilePath} (not a video file)")
+        else:
+            cmn.log(f"[INFO] found video file {file}")
+            return file
+        
+    cmn.log(f" [ERR] no supported movie file found in {videoDirPath}")
+    return None
+
+
+def get_metainfo(mediatype, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation):
+    mediapath = os.path.join(cmn.MEDIA_DIR_PATH, mediatype)
+    os.makedirs(mediapath, exist_ok=True) # make sure path exists
+    count = 1    
+    for subfolder in os.listdir(mediapath):
+        DATA = {}
+
+        videoDirPath = os.path.join(mediapath, subfolder)
+        if not os.path.isdir(videoDirPath):
+            continue
+
+        if mediatype == cmn.MEDIA_TYPE_MOVIES:
+            # utilize mediainfo:
+            videoFile = findVideoFile(videoDirPath)
+            if videoFile == None:
+                cmn.log(f" [ERR] aborting processing of folder {videoDirPath}")
+                continue
+    
+            videoFilePath = os.path.join(videoDirPath, videoFile)
+
+            DATA['path'] = subfolder
+            DATA['file'] = videoFile   
+            DATA['length'] = UNKNOWN_VALUE
+            DATA['resolution'] = UNKNOWN_VALUE            
+            DATA['thumbnailFile'] = "dummy.jpg"
+            DATA['thumbColor'] = "#ffffff" # 'most common color' of the thumbnail image
+            mediaInfo = mediaInfoExtractor(videoFilePath)
+            cmn.log(f" [DBG] video infos for {videoFilePath}: {mediaInfo}")
+    
+            if len(mediaInfo) > 0:
+                lengthInfo = UNKNOWN_VALUE
+                widthInfo = UNKNOWN_VALUE
+                heightInfo = UNKNOWN_VALUE
+                for name in mediaInfo:
+                    if name == 'Duration':
+                        seconds = float(mediaInfo[name])
+                        h = int(seconds / 3600)
+                        m = int((seconds % 3600) / 60)
+                        minutes = "{:02d}".format(m) if h > 0 else str(m)
+                        lengthInfo = f'{h}:{minutes} h' if h > 0 else f'{minutes} min'
+                    elif name == 'Width':
+                        widthInfo = mediaInfo[name]
+                    elif name == 'Height':
+                        heightInfo = mediaInfo[name]
+                # store the detected values in the model:
+                DATA['length'] = lengthInfo
+                DATA['resolution'] = f'{widthInfo}x{heightInfo} px'
+
+            thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+            if thumbnailFile != None:
+                DATA['thumbnailFile'] = thumbnailFile
+                DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
+                
+        # write media collections (Seasons or Audios)
+        if mediatype == cmn.MEDIA_TYPE_SERIES or mediatype == cmn.MEDIA_TYPE_AUDIOS:
+            seasonsCount = 0
+            episodesCount = 0
+            episodeFiles = []
+            episodeTitles = []
+            
+            videoFilePath = None
+            for seasonDirName in cmn.orderedFileList(videoDirPath):
+                if seasonDirName != "meta":
+                    seasonsCount += 1
+                    episodeDir = os.path.join(videoDirPath, seasonDirName)
+                    episodeVideoFiles = cmn.orderedFileList(episodeDir)
+                    episodeTitles.append(titlesFromTags(episodeDir, episodeVideoFiles))
+                    count = len(episodeVideoFiles)
+                    episodesCount += count
+                    episodeFiles.append(episodeVideoFiles)
+                    if count > 0 and videoFilePath == None:
+                        videoFilePath = os.path.join(videoDirPath, seasonDirName, episodeVideoFiles[0])
+            
+            DATA["path"] = subfolder
+            DATA["Seasons"] = str(seasonsCount)
+            DATA["Episodes"] = str(episodesCount)
+            DATA["SeasonEp"] = str(episodeFiles)
+            DATA["EpisodeTitles"] = str(episodeTitles)
+            DATA['thumbnailFile'] = "dummy.jpg"
+            DATA['thumbColor'] = "#ffffff" # 'most common color' of the thumbnail image
+            
+            if videoFilePath != None:
+                mediaInfo = mediaInfoExtractor(videoFilePath)
+                thumbnailFile = thumbnail(videoFilePath, os.path.join(videoDirPath, "meta"), mediaInfo, thumbnailSupplier, forceThumbnailReCreation)
+                if thumbnailFile != None:
+                    DATA['thumbnailFile'] = thumbnailFile
+                    DATA['thumbColor'] = thumbnailBackColor(os.path.join(videoDirPath, "meta", thumbnailFile))
+            
+        DATA["name"] = cmn.fileNameToTitle(subfolder)        
+        titlePath = os.path.join(mediapath, subfolder, "meta", "title.txt") # TODO: use constants
+        try:
+            title = cmn.readTextFile(titlePath)
+            if title == "":
+                cmn.log(f"[WARN] no title text found in {titlePath}")
+            else:
+                cmn.log(f" [DBG] title text found in {titlePath}")
+                DATA["name"] = title.replace("'", "\\'").replace("\n", " ").replace("  ", " ")
+        except FileNotFoundError:
+            cmn.log(f'[WARN] {titlePath} not found')
+
+
+        # looks if description exists
+        descrPath = os.path.join(mediapath, subfolder, "meta", "description.txt") # TODO: use constants
+        try:
+            descr = cmn.readTextFile(descrPath)
+            if descr == "":
+                cmn.log(f"[WARN] no description text found in {descrPath}")
+                DATA["description"] = ""
+            else:
+                cmn.log(f" [DBG] description text found in {descrPath}")
+                DATA["description"] = descr.replace("'", "\\'").replace("\n", " ").replace("  ", " ")
+        except FileNotFoundError:
+            cmn.log(f'[WARN] {descrPath} not found')
+            
+        DATA["mediatype"] = mediatype        
+        DATA["id"] = str(count)
+            
+        #write the gathered data to the actual data.js file
+        writeData(DATA, mediatype)
+        count += 1
+
+
+def titlesFromTags(dirPath, mediaFiles):
+    episodeTitles = []
+    for mediaFile in mediaFiles:
+        filePath = os.path.join(dirPath, mediaFile)
+        if TinyTag.is_supported(filePath):
+            tag = TinyTag.get(filePath)
+            cmn.log(f' [DBG] tags from {filePath}: artist={tag.artist}, title={tag.title}, track number={tag.track}')
+            
+            episodeTitles.append(cmn.joinStrings([ tag.artist, tag.title ], " - "))
+    
+    return episodeTitles
+            
+
+# imports moviepy if it's available, see https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported    
+# install with:
+# pip install --force-reinstall -v "moviepy==1.0.3"
+def loadMoviepyModule():
+#    return None
+    
+    name = 'moviepy.editor'
+    try:
+        if (spec := importlib.util.find_spec(name)) is not None:
+            # If you chose to perform the actual import ...
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            cmn.log(f"[INFO] {name!r} module has been imported")
+            return module
+    except Exception as ex:
+        print(f"[INFO] couldn't import {name!r} module: {ex}")
+
+    print(f"[WARN] {name!r} module not available")
+    return None
+
+
+
+def detectFFProbeVersion():
+#    return None
+
+    try:
+        complProc = subprocess.run(['ffprobe', '-version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").split('\n', 1)[0]
+        cmn.log(f"[INFO] found 'ffprobe' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f"[INFO] failed to detect 'ffprobe' version (not installed or not in PATH): {ex}")
+        return None
+
+
+def detectFFMpegVersion():
+#    return None
+
+    try:
+        complProc = subprocess.run(['ffmpeg', '-version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").split('\n', 1)[0]
+        cmn.log(f"[INFO] found 'ffmpeg' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f"[INFO] failed to detect 'ffmpeg' version (not installed or not in PATH): {ex}")
+        return None
+
+
+def detectMediainfoVersion():
+    return None
+
+    try:
+        complProc = subprocess.run(['mediainfo', '--Version', '/dev/null'], capture_output = True)
+        vers = complProc.stdout.decode("UTF-8").replace("\r", "").replace("\n", "")
+        cmn.log(f"[INFO] found 'mediainfo' version: {vers}")
+        return vers
+    except Exception as ex:
+        cmn.log(f"[INFO] failed to detect 'mediainfo' version (not installed or not in PATH): {ex}")
+        return None
+
+
+
+def initMediaInfoExtractor():
+    if detectMediainfoVersion() != None:
+        cmn.log(f"[INFO] using 'mediainfo' command to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromMediainfo(mediaFilePath)
+    elif detectFFProbeVersion() != None:
+        cmn.log(f"[INFO] using 'ffprobe' command to extract media information")
+        mediaInfoExtractor = lambda mediaFilePath: infoMapFromFFProbe(mediaFilePath)
+    else:
+        moviepyModule = loadMoviepyModule() 
+        if moviepyModule != None:
+            cmn.log(f"[INFO] using 'moviepy' module to extract media information")
+            mediaInfoExtractor = lambda mediaFilePath: infoMapFromMoviepy(mediaFilePath, moviepyModule)
+        else:
+            cmn.log(f"[WARN] neither 'ffprobe' nor 'mediainfo' nor 'moviepy' module found, extracting media information will not be supported")
+            mediaInfoExtractor = lambda mediaFilePath: {}
+        
+    return mediaInfoExtractor
+    
+    
+def initThumbnailSupplier():    
+    if detectFFMpegVersion() != None:
+        cmn.log(f"[INFO] using 'ffmpeg' command to extract thumbnail images")
+        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailFromFFMpeg(mediaFilePath, metaDirPath, mediaInfoMap)
+    else:
+        cmn.log(f"[WARN] 'ffmpeg' not found, falling back to simple SVG thumbnail generation")
+        thumbnailSupplier = lambda mediaFilePath, metaDirPath, mediaInfoMap: thumbnailSvg(mediaFilePath, metaDirPath)
+        
+    return thumbnailSupplier        
+
+
+
+# the actual API (the other stuff is considered to be internal or 'private'):
+def refresh(forceThumbnailReCreation):
+    cmn.log(" [DBG] clearing old temporary stuff (if there's any)...")
+    clearTempData()
+    cmn.log(" [DBG] ...done")
+
+    cmn.log(" [DBG] initializing media info extractor...")
+    mediaInfoExtractor = initMediaInfoExtractor()
+    cmn.log(" [DBG] ...done")
+    
+    thumbnailSupplier = initThumbnailSupplier()
+
+    writeHeader("Movies", type="start")
+    get_metainfo(cmn.MEDIA_TYPE_MOVIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
+    writeFooter(type = "List")
+
+    writeHeader("Series", type="anythingBesidesStart")
+    get_metainfo(cmn.MEDIA_TYPE_SERIES, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
+    writeFooter(type = "List")
+
+    writeHeader("Audios", type="anythingBesidesStart")
+    get_metainfo(cmn.MEDIA_TYPE_AUDIOS, mediaInfoExtractor, thumbnailSupplier, forceThumbnailReCreation)
+    writeFooter(type = "notList")
+
+    os.replace(TEMP_FILE_PATH, DATA_FILE_PATH)
+    cmn.log("[INFO] " + DATA_FILE_PATH + " successfully generated")
+    
